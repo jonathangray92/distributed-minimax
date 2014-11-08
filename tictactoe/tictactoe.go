@@ -10,21 +10,23 @@ const (
 	o
 )
 
-type Node struct {
+type State struct {
 	player player
 	board  [3][3]player
 }
 
-func (n Node) Value() naive_minimax.Value {
+func (n State) Value() naive_minimax.Value {
 	switch n.winner() {
 	case none:
 		return 0
 	case x:
 		return 1
+	default:
+		return -1
 	}
 }
 
-func (n Node) winner() player {
+func (n State) winner() player {
 	for _, v := range [...][3]player{
 		{n.board[0][0], n.board[0][1], n.board[0][2]},
 		{n.board[1][0], n.board[1][1], n.board[1][2]},
