@@ -2,6 +2,7 @@ package tictactoe
 
 import "github.com/jonathangray92/distributed-minimax/game"
 
+// Identifies a player in the game.
 type Player int
 
 // Switches the Player between X and O. If the Player is None, this is a no-op.
@@ -23,35 +24,11 @@ type State struct {
 	Board [3][3]Player
 }
 
-func (s State) Value() game.Value { return game.Value(s.winner()) }
-
-// Returns the winner (X or O). If there is no winner in this game state,
-// returns None.
-func (s State) winner() Player {
-	for _, v := range [...][3]Player{
-		// Rows
-		{s.Board[0][0], s.Board[0][1], s.Board[0][2]},
-		{s.Board[1][0], s.Board[1][1], s.Board[1][2]},
-		{s.Board[2][0], s.Board[2][1], s.Board[2][2]},
-
-		// Columns
-		{s.Board[0][0], s.Board[1][0], s.Board[2][0]},
-		{s.Board[0][1], s.Board[1][1], s.Board[2][1]},
-		{s.Board[0][2], s.Board[1][2], s.Board[2][2]},
-
-		// Diagonals
-		{s.Board[0][0], s.Board[1][1], s.Board[2][2]},
-		{s.Board[0][2], s.Board[1][1], s.Board[2][0]},
-	} {
-		if v[0] != None && v[0] == v[1] && v[1] == v[2] {
-			return v[0]
-		}
-	}
-
-	return None
-}
-
-func (s State) MaximizingPlayer() bool { return s.Player == X }
+func (s State) Value() game.Value            { return game.Value(s.winner()) }
+func (s State) MaximizingPlayer() bool       { return s.Player == X }
+func (s State) EncodeState() ([]byte, error) { panic("Unimplemented.") }
+func (s State) DecodeState(p []byte) error   { panic("Unimplemented.") }
+func (s State) Id() interface{}              { return s }
 
 func (s State) Moves() game.StateIterator {
 	// If there is a winner, then there are no possible moves.
@@ -84,7 +61,28 @@ func (s State) Moves() game.StateIterator {
 	return iter
 }
 
-func (s State) EncodeState() ([]byte, error) { panic("Unimplemented.") }
-func (s State) DecodeState(p []byte) error   { panic("Unimplemented.") }
+// Returns the winner (X or O). If there is no winner in this game state,
+// returns None.
+func (s State) winner() Player {
+	for _, v := range [...][3]Player{
+		// Rows
+		{s.Board[0][0], s.Board[0][1], s.Board[0][2]},
+		{s.Board[1][0], s.Board[1][1], s.Board[1][2]},
+		{s.Board[2][0], s.Board[2][1], s.Board[2][2]},
 
-func (s State) Id() interface{} { return s }
+		// Columns
+		{s.Board[0][0], s.Board[1][0], s.Board[2][0]},
+		{s.Board[0][1], s.Board[1][1], s.Board[2][1]},
+		{s.Board[0][2], s.Board[1][2], s.Board[2][2]},
+
+		// Diagonals
+		{s.Board[0][0], s.Board[1][1], s.Board[2][2]},
+		{s.Board[0][2], s.Board[1][1], s.Board[2][0]},
+	} {
+		if v[0] != None && v[0] == v[1] && v[1] == v[2] {
+			return v[0]
+		}
+	}
+
+	return None
+}
