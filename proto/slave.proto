@@ -1,0 +1,21 @@
+package proto;
+
+option cc_generic_services = true;
+
+message GetWorkRequest {
+    message Result {
+        required bytes state = 1;
+        required int32 value = 2;  // should match Value type in game/game.go
+    }
+    // optionally return the results of a previous workload
+    optional Result result = 1;
+}
+
+message GetWorkResponse {
+    // N.B. support only a SINGLE state per request right now
+    required bytes state = 1;
+}
+
+service SlaveService {
+    rpc GetWork(GetWorkRequest) returns (GetWorkResponse);
+}

@@ -35,4 +35,5 @@ type State interface {
 type StateIterator func() (next State)
 
 // Value is the type of the heuristic values of game states.
-type Value int
+// This type must match the corresponding Value type in proto/slave.proto
+type Value int32
