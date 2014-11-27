@@ -39,6 +39,9 @@ type State struct {
 	Board [3][3]Player
 }
 
+// Returns the State for the beginning of a tictactoe game.
+func NewGame() State { return State{Player: X, Board: [3][3]Player{}} }
+
 func (s State) Value() game.Value            { return game.Value(s.winner()) }
 func (s State) MaximizingPlayer() bool       { return s.Player == X }
 func (s State) EncodeState() ([]byte, error) { panic("Unimplemented.") }
