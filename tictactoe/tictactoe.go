@@ -1,12 +1,27 @@
 package tictactoe
 
-import "github.com/jonathangray92/distributed-minimax/game"
+import (
+	"fmt"
+
+	"github.com/jonathangray92/distributed-minimax/game"
+)
 
 // Identifies a player in the game.
 type Player int
 
 // Switches the Player between X and O. If the Player is None, this is a no-op.
 func (p *Player) Toggle() { *p = -*p }
+
+func (p Player) String() string {
+	switch p {
+	case X:
+		return "x"
+	case O:
+		return "o"
+	default:
+		return "-"
+	}
+}
 
 const (
 	None Player = 0  // No player
@@ -85,4 +100,13 @@ func (s State) winner() Player {
 	}
 
 	return None
+}
+
+func (s State) String() string {
+	return fmt.Sprintf("Player:\n%v\nBoard:\n%v%v%v\n%v%v%v\n%v%v%v\n",
+		s.Player,
+		s.Board[0][0], s.Board[0][1], s.Board[0][2],
+		s.Board[1][0], s.Board[1][1], s.Board[1][2],
+		s.Board[2][0], s.Board[2][1], s.Board[2][2],
+	)
 }
