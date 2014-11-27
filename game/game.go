@@ -15,7 +15,7 @@ type State interface {
 
 	// An iterator over game states one move away from the current game state. The result
 	// should not be nil, even if there are no possible moves.
-	Moves() StateIterator
+	MoveIterator() StateIterator
 
 	// Converts the State to a serialized representation.
 	EncodeState() ([]byte, error)

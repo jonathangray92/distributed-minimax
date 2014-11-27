@@ -14,8 +14,8 @@ import "github.com/jonathangray92/distributed-minimax/game"
 func Minimax(state game.State, maxDepth int) (bestVal game.Value, bestMove game.State) {
 
 	var (
-		nextMove = state.Moves()
-		move     = nextMove()
+		iterMoves = state.MoveIterator()
+		move      = iterMoves()
 	)
 
 	if maxDepth == 0 || move == nil {
@@ -38,7 +38,7 @@ func Minimax(state game.State, maxDepth int) (bestVal game.Value, bestMove game.
 
 	// compare all possible moves to determine which one is best
 	for {
-		move = nextMove()
+		move = iterMoves()
 		if move == nil {
 			break
 		}

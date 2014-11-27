@@ -30,7 +30,7 @@ func (s State) EncodeState() ([]byte, error) { panic("Unimplemented.") }
 func (s State) DecodeState(p []byte) error   { panic("Unimplemented.") }
 func (s State) Id() interface{}              { return s }
 
-func (s State) Moves() game.StateIterator {
+func (s State) MoveIterator() game.StateIterator {
 	// If there is a winner, then there are no possible moves.
 	if s.winner() != None {
 		return func() game.State { return nil }
