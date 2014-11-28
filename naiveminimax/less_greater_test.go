@@ -1,4 +1,4 @@
-package naive_minimax
+package naiveminimax
 
 import "testing"
 

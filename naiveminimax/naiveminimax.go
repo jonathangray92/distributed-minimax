@@ -1,5 +1,5 @@
 // This package defines a naive, sequential implementation of the minimax algorithm.
-package naive_minimax
+package naiveminimax
 
 import "github.com/jonathangray92/distributed-minimax/game"
 
