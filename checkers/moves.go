@@ -90,38 +90,45 @@ type movesWithDirPusher interface {
 	pushMovesWithDir(from move, advance advanceFunc) (didPush bool)
 }
 
-// A function which returns the two possible outcomes of advancing a piece
-// either forward or backward. If either possible move in that direction
-type advanceFunc func(Pieces) [2]Pieces
+// A function which returns the result of moving the provided pieces in a
+// particular direction.
+type advanceFunc func(Pieces) Pieces
 
 // Pushes moves in the appropriate direction: forward for player 1, backward
-// for player2, or both if the piece is a pawn. Returns whether any moves were
+// for player2, or both if the piece is a king. Returns whether any moves were
 // pushed.
 func pushRelativeMoves(moves movesWithDirPusher, from move) (didPush bool) {
-	var didPushForward, didPushBackward bool
-
 	if from.Turn.isPlayer1 || from.start.hasKing() {
-		didPushForward = moves.pushMovesWithDir(from, Pieces.forward)
+		if moves.pushMovesWithDir(from, Pieces.forwardLeft) {
+			didPush = true
+		}
+		if moves.pushMovesWithDir(from, Pieces.forwardRight) {
+			didPush = true
+		}
 	}
 
 	if !from.Turn.isPlayer1 || from.start.hasKing() {
-		didPushBackward = moves.pushMovesWithDir(from, Pieces.backward)
+		if moves.pushMovesWithDir(from, Pieces.backwardLeft) {
+			didPush = true
+		}
+		if moves.pushMovesWithDir(from, Pieces.backwardRight) {
+			didPush = true
+		}
 	}
 
-	return didPushForward || didPushBackward
+	return didPush
 }
 
 // Implement movesWithDirPusher for Steps.
 
 func (steps *Steps) pushMovesWithDir(from move, advance advanceFunc) (didPush bool) {
-	newEnds := advance(from.start)
-	for i := range newEnds {
-		if newEnds[i] != NoPieces {
-			if !from.CurrentPlayer.combinedWith(from.Opponent).contains(newEnds[i].positions()) {
-				steps.push(move{State: from.State, start: from.start, end: newEnds[i], captures: NoPieces})
-				didPush = true
-			}
+	newEnd := advance(from.start)
+	if newEnd != NoPieces {
+		if !from.CurrentPlayer.combinedWith(from.Opponent).contains(newEnd.positions()) {
+			steps.push(move{State: from.State, start: from.start, end: newEnd, captures: NoPieces})
+			didPush = true
 		}
+
 	}
 	return didPush
 }
@@ -129,15 +136,13 @@ func (steps *Steps) pushMovesWithDir(from move, advance advanceFunc) (didPush bo
 // Implement movesWithDirPusher for Jumps.
 
 func (jumps *Jumps) pushMovesWithDir(from move, advance advanceFunc) (didPush bool) {
-	skips := advance(from.end)
-	for i := range skips {
-		newCapture := from.Opponent.capture(from.captures).pieceAt(skips[i].positions())
-		newEnd := advance(skips[i])[i]
-		if newCapture != NoPieces && newEnd != NoPieces {
-			if !from.CurrentPlayer.combinedWith(from.Opponent).contains(newEnd.positions()) {
-				jumps.push(move{State: from.State, start: from.start, end: newEnd, captures: from.captures.combinedWith(newCapture)})
-				didPush = true
-			}
+	skip := advance(from.end)
+	newCapture := from.Opponent.capture(from.captures).pieceAt(skip.positions())
+	newEnd := advance(skip)
+	if newCapture != NoPieces && newEnd != NoPieces {
+		if !from.CurrentPlayer.combinedWith(from.Opponent).contains(newEnd.positions()) {
+			jumps.push(move{State: from.State, start: from.start, end: newEnd, captures: from.captures.combinedWith(newCapture)})
+			didPush = true
 		}
 	}
 	return didPush

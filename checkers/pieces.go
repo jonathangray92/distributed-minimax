@@ -56,35 +56,39 @@ func (p Pieces) positions() positions {
 	return p.Pawns | p.Kings
 }
 
-// Returns 2 sets of pieces, where all the pieces in p are move forward to the
-// left and forward to the right. Pieces where this move would put them off the
-// end of the board are discarded.
-func (p Pieces) forward() [2]Pieces {
-	return [2]Pieces{
-		{
-			Pawns: (p.Pawns << (size - 1)) & checkerMask,
-			Kings: (p.Kings << (size - 1)) & checkerMask,
-		},
-		{
-			Pawns: (p.Pawns << (size + 1)) & checkerMask,
-			Kings: (p.Kings << (size + 1)) & checkerMask,
-		},
+// Returns p with all pieces moved forward-left. Any pieces which move off the
+// board are discarded.
+func (p Pieces) forwardLeft() Pieces {
+	return Pieces{
+		Pawns: (p.Pawns << (size + 1)) & checkerMask,
+		Kings: (p.Kings << (size + 1)) & checkerMask,
 	}
 }
 
-// Returns 2 sets of pieces, where all the pieces in p are move backward to the
-// left and backward to the right. Pieces where this move would put them off the
-// end of the board are discarded.
-func (p Pieces) backward() [2]Pieces {
-	return [2]Pieces{
-		{
-			Pawns: (p.Pawns >> (size - 1)) & checkerMask,
-			Kings: (p.Kings >> (size - 1)) & checkerMask,
-		},
-		{
-			Pawns: (p.Pawns >> (size + 1)) & checkerMask,
-			Kings: (p.Kings >> (size + 1)) & checkerMask,
-		},
+// Returns p with all pieces moved forward-right. Any pieces which move off the
+// board are discarded.
+func (p Pieces) forwardRight() Pieces {
+	return Pieces{
+		Pawns: (p.Pawns << (size - 1)) & checkerMask,
+		Kings: (p.Kings << (size - 1)) & checkerMask,
+	}
+}
+
+// Returns p with all pieces moved backward-left. Any pieces which move off the
+// board are discarded.
+func (p Pieces) backwardLeft() Pieces {
+	return Pieces{
+		Pawns: (p.Pawns >> (size - 1)) & checkerMask,
+		Kings: (p.Kings >> (size - 1)) & checkerMask,
+	}
+}
+
+// Returns p with all pieces moved backward-right. Any pieces which move off the
+// board are discarded.
+func (p Pieces) backwardRight() Pieces {
+	return Pieces{
+		Pawns: (p.Pawns >> (size + 1)) & checkerMask,
+		Kings: (p.Kings >> (size + 1)) & checkerMask,
 	}
 }
 
