@@ -23,6 +23,8 @@ type Moves interface {
 // A collection of step moves.
 type Steps struct{ moveStack }
 
+// Finish implementing Moves for Steps.
+
 func (steps *Steps) InitiateMove(state BasicState, piece Pieces) {
 	pushRelativeMoves(steps, move{BasicState: state, start: piece, end: piece, captures: NoPieces})
 }
@@ -33,6 +35,8 @@ func (steps *Steps) AdvanceMoves() (completeMove BasicState, ok bool) {
 
 // A collection of jump moves.
 type Jumps struct{ moveStack }
+
+// Finish implementing Moves for Jumps.
 
 func (jumps *Jumps) InitiateMove(state BasicState, piece Pieces) {
 	pushRelativeMoves(jumps, move{BasicState: state, start: piece, end: piece, captures: NoPieces})
