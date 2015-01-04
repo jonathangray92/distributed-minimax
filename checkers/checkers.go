@@ -5,14 +5,14 @@ import "bytes"
 import "github.com/jonathangray92/distributed-minimax/game"
 
 // Represents a game state for checkers.
-type State struct {
+type BasicState struct {
 	Turn                    Turn
 	CurrentPlayer, Opponent Pieces
 }
 
 // Returns the initial game state for checkers.
-func NewGame() State {
-	return State{
+func NewBasicGame() BasicState {
+	return BasicState{
 		Turn: Player1,
 		CurrentPlayer: Pieces{
 			Pawns: 0x0000000000FFFFFF & checkerMask,
@@ -23,13 +23,39 @@ func NewGame() State {
 	}
 }
 
-func (s State) Value() game.Value            { return 0 }
-func (s State) MaximizingPlayer() bool       { return s.Turn.isPlayer1 }
-func (s State) EncodeState() ([]byte, error) { panic("Unimplemented") }
-func (s State) DecodeState([]byte) error     { panic("Unimplemented") }
-func (s State) Id() interface{}              { return s }
+func (s BasicState) Value() game.Value {
+	player1, player2 := s.CurrentPlayer, s.Opponent
+	if !s.Turn.isPlayer1 {
+		player1, player2 = player2, player1
+	}
 
-func (s State) MoveIterator() game.StateIterator {
+	var accum game.Value
+
+	for pos := startPos; pos.valid(); pos = pos.succ() {
+		if piece := player1.pieceAt(pos); piece != NoPieces {
+			if piece.hasKing() {
+				accum += 5
+			} else {
+				accum += 2
+			}
+		} else if piece := player2.pieceAt(pos); piece != NoPieces {
+			if piece.hasKing() {
+				accum -= 5
+			} else {
+				accum -= 2
+			}
+		}
+	}
+
+	return accum
+}
+
+func (s BasicState) MaximizingPlayer() bool       { return s.Turn.isPlayer1 }
+func (s BasicState) EncodeState() ([]byte, error) { panic("Unimplemented") }
+func (s BasicState) DecodeState([]byte) error     { panic("Unimplemented") }
+func (s BasicState) Id() interface{}              { return s }
+
+func (s BasicState) MoveIterator() game.StateIterator {
 	if s.CurrentPlayer == NoPieces || s.Opponent == NoPieces {
 		return func() game.State { return nil }
 	}
@@ -75,7 +101,7 @@ func (s State) MoveIterator() game.StateIterator {
 	return iter
 }
 
-func (s State) String() string {
+func (s BasicState) String() string {
 	var player1, player2 Pieces
 	if s.Turn.isPlayer1 {
 		player1, player2 = s.CurrentPlayer, s.Opponent

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jonathangray92/distributed-minimax/game"
+	minimax "github.com/jonathangray92/distributed-minimax/naiveminimax"
 )
 
 func init() {
@@ -14,17 +15,11 @@ func init() {
 }
 
 func TestCheckers(t *testing.T) {
-	start := game.State(NewGame())
-
+	var start game.State = NewRepeatLimitedGame()
 	var chosenMove game.State
 	for state := start; state != nil; state = chosenMove {
+		state.(*RepeatLimitedState).UseState()
 		fmt.Println(state)
-		iterMoves := state.MoveIterator()
-		chosenMove = iterMoves()
-		for move := chosenMove; move != nil; move = iterMoves() {
-			if rand.Float32() < 0.2 {
-				chosenMove = move
-			}
-		}
+		_, chosenMove = minimax.Minimax(state, 4)
 	}
 }

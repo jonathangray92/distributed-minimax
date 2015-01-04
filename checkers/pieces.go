@@ -56,8 +56,8 @@ func (p Pieces) positions() positions {
 	return p.Pawns | p.Kings
 }
 
-// Returns p with all pieces moved forward-left. Any pieces which move off the
-// board are discarded.
+// Returns p with all pieces moved one square forward-left. Any pieces which
+// move off the board are discarded.
 func (p Pieces) forwardLeft() Pieces {
 	return Pieces{
 		Pawns: (p.Pawns << (size + 1)) & checkerMask,
@@ -65,8 +65,8 @@ func (p Pieces) forwardLeft() Pieces {
 	}
 }
 
-// Returns p with all pieces moved forward-right. Any pieces which move off the
-// board are discarded.
+// Returns p with all pieces moved one square forward-right. Any pieces which
+// move off the board are discarded.
 func (p Pieces) forwardRight() Pieces {
 	return Pieces{
 		Pawns: (p.Pawns << (size - 1)) & checkerMask,
@@ -74,8 +74,8 @@ func (p Pieces) forwardRight() Pieces {
 	}
 }
 
-// Returns p with all pieces moved backward-left. Any pieces which move off the
-// board are discarded.
+// Returns p with all pieces moved one square backward-left. Any pieces which
+// move off the board are discarded.
 func (p Pieces) backwardLeft() Pieces {
 	return Pieces{
 		Pawns: (p.Pawns >> (size - 1)) & checkerMask,
@@ -83,8 +83,8 @@ func (p Pieces) backwardLeft() Pieces {
 	}
 }
 
-// Returns p with all pieces moved backward-right. Any pieces which move off the
-// board are discarded.
+// Returns p with all pieces moved one square backward-right. Any pieces which
+// move off the board are discarded.
 func (p Pieces) backwardRight() Pieces {
 	return Pieces{
 		Pawns: (p.Pawns >> (size + 1)) & checkerMask,

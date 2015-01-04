@@ -6,7 +6,7 @@ type Moves interface {
 	// move. If more than one move is possible for the provided piece, this
 	// will result in each possible move eventually being returned by
 	// AdvanceMoves.
-	InitiateMove(state State, piece Pieces)
+	InitiateMove(state BasicState, piece Pieces)
 
 	// Causes moves in the collection to progress. If this results in any of
 	// the moves being complete, a completed move--represented as the game
@@ -14,7 +14,7 @@ type Moves interface {
 	// is false. The returned move, if any, is removed from the collection.
 	// Additional completed moves which aren't returned on this call to
 	// AdvanceMoves are returned from subsequent calls.
-	AdvanceMoves() (completeMove State, ok bool)
+	AdvanceMoves() (completeMove BasicState, ok bool)
 
 	// Returns whether there are any active moves in the collection.
 	HasMove() bool
@@ -23,29 +23,29 @@ type Moves interface {
 // A collection of step moves.
 type Steps struct{ moveStack }
 
-func (steps *Steps) InitiateMove(state State, piece Pieces) {
-	pushRelativeMoves(steps, move{State: state, start: piece, end: piece, captures: NoPieces})
+func (steps *Steps) InitiateMove(state BasicState, piece Pieces) {
+	pushRelativeMoves(steps, move{BasicState: state, start: piece, end: piece, captures: NoPieces})
 }
 
-func (steps *Steps) AdvanceMoves() (completeMove State, ok bool) {
+func (steps *Steps) AdvanceMoves() (completeMove BasicState, ok bool) {
 	return steps.pop().apply(), true
 }
 
 // A collection of jump moves.
 type Jumps struct{ moveStack }
 
-func (jumps *Jumps) InitiateMove(state State, piece Pieces) {
-	pushRelativeMoves(jumps, move{State: state, start: piece, end: piece, captures: NoPieces})
+func (jumps *Jumps) InitiateMove(state BasicState, piece Pieces) {
+	pushRelativeMoves(jumps, move{BasicState: state, start: piece, end: piece, captures: NoPieces})
 }
 
-func (jumps *Jumps) AdvanceMoves() (completeMove State, ok bool) {
+func (jumps *Jumps) AdvanceMoves() (completeMove BasicState, ok bool) {
 	jump := jumps.pop()
 
 	if !pushRelativeMoves(jumps, jump) {
 		return jump.apply(), true
 	}
 
-	return State{}, false
+	return BasicState{}, false
 }
 
 // A stack of in-progress moves.
@@ -68,14 +68,14 @@ func (ms *moveStack) pop() (moveVal move) {
 
 // Represents an in-progress move.
 type move struct {
-	State             // The initial state for the move.
+	BasicState        // The initial state for the move.
 	start, end Pieces // The start and end positions of the piece to be moved.
 	captures   Pieces // The pieces to be captured during the move.
 }
 
 // Returns the end state of the move.
-func (m move) apply() State {
-	return State{
+func (m move) apply() BasicState {
+	return BasicState{
 		Turn:          m.Turn.toggle(),
 		CurrentPlayer: m.Opponent.capture(m.captures),
 		Opponent:      m.CurrentPlayer.doMove(m.start, m.end).kingPositions(m.Turn.kingingRow),
@@ -125,7 +125,7 @@ func (steps *Steps) pushMovesWithDir(from move, advance advanceFunc) (didPush bo
 	newEnd := advance(from.start)
 	if newEnd != NoPieces {
 		if !from.CurrentPlayer.combinedWith(from.Opponent).contains(newEnd.positions()) {
-			steps.push(move{State: from.State, start: from.start, end: newEnd, captures: NoPieces})
+			steps.push(move{BasicState: from.BasicState, start: from.start, end: newEnd, captures: NoPieces})
 			didPush = true
 		}
 
@@ -141,7 +141,7 @@ func (jumps *Jumps) pushMovesWithDir(from move, advance advanceFunc) (didPush bo
 	newEnd := advance(skip)
 	if newCapture != NoPieces && newEnd != NoPieces {
 		if !from.CurrentPlayer.combinedWith(from.Opponent).contains(newEnd.positions()) {
-			jumps.push(move{State: from.State, start: from.start, end: newEnd, captures: from.captures.combinedWith(newCapture)})
+			jumps.push(move{BasicState: from.BasicState, start: from.start, end: newEnd, captures: from.captures.combinedWith(newCapture)})
 			didPush = true
 		}
 	}
