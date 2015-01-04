@@ -53,7 +53,7 @@ func main() {
 		log.Printf("work: %+v\n", state)
 
 		// analyze state and save the value to the lastResult
-		maxDepth := 4
+		maxDepth := 15
 		value, _ := minimax.Minimax(state, maxDepth)
 		result.Value = value
 		lastResult = result
