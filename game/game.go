@@ -1,6 +1,8 @@
 // Package game defines the interfaces implemented by games used with the minimax package.
 package game
 
+import "math"
+
 // A State represents a game state in a user-defined game.
 type State interface {
 	// The heuristic value of the game state.
@@ -37,3 +39,5 @@ type StateIterator func() (next State)
 // Value is the type of the heuristic values of game states.
 // This type must match the corresponding Value type in proto/slave.proto
 type Value int32
+const MaxValue = Value(math.MaxInt32)
+const MinValue = Value(math.MinInt32)
