@@ -6,7 +6,7 @@ import (
 	rpc "github.com/jonathangray92/distributed-minimax/proto"
 	"github.com/jonathangray92/distributed-minimax/game"
 	"github.com/jonathangray92/distributed-minimax/bvttt"
-	minimax "github.com/jonathangray92/distributed-minimax/naiveminimax"
+	minimax "github.com/jonathangray92/distributed-minimax/minimax"
 )
 
 type Result struct {
