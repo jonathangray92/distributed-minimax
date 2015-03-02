@@ -54,9 +54,10 @@ func main() {
 
 		// analyze state and save the value to the lastResult
 		maxDepth := 15
-		value, _ := minimax.Minimax(state, maxDepth)
+		value, _, numStatesAnalyzed := minimax.Minimax(state, maxDepth)
 		result.Value = value
 		lastResult = result
 		log.Printf("value: %v\n", value)
+		log.Printf("numStatesAnalyzed: %v\n", numStatesAnalyzed)
 	}
 }
