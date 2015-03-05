@@ -1,0 +1,16 @@
+package proto;
+
+option cc_generic_services = true;
+
+message DoWorkRequest {
+    required bytes state = 1;
+    required uint64 timeLimitMillis = 2;
+}
+
+message DoWorkResponse {
+    required bytes move = 1;  // suggestion for next state
+}
+
+service UserService {
+    rpc DoWork(DoWorkRequest) returns (DoWorkResponse);
+}

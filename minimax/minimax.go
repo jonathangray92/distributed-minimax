@@ -57,8 +57,7 @@ func AlphaBeta(state game.State, maxDepth int, alpha game.Value, beta game.Value
 // convenience wrapper over the AlphaBeta function which initializes alpha and beta
 // to their proper values
 func Minimax(state game.State, maxDepth int) (bestVal game.Value, bestMove game.State, numStatesAnalyzed int) {
-	bestVal, bestMove, numStatesAnalyzed = AlphaBeta(state, maxDepth, game.MinValue, game.MaxValue)
-	return
+	return AlphaBeta(state, maxDepth, game.MinValue, game.MaxValue)
 }
 
 // Implements iterative deepening alpha-beta minimax in a separate goroutine,

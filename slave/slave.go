@@ -2,10 +2,11 @@ package main
 
 import (
 	"log"
+	"time"
 	proto "code.google.com/p/goprotobuf/proto"
 	rpc "github.com/jonathangray92/distributed-minimax/proto"
 	"github.com/jonathangray92/distributed-minimax/game"
-	"github.com/jonathangray92/distributed-minimax/bvttt"
+	gameImpl "github.com/jonathangray92/distributed-minimax/connect4"
 	minimax "github.com/jonathangray92/distributed-minimax/minimax"
 )
 
@@ -14,7 +15,7 @@ type Result struct {
 	Value game.Value
 }
 
-func getWork(stub *rpc.SlaveServiceClient, result *Result) (*bvttt.State, *Result, error) {
+func getWork(stub *rpc.SlaveServiceClient, result *Result) (*gameImpl.State, *Result, error) {
 	// create request
 	var request rpc.GetWorkRequest
 	var response rpc.GetWorkResponse
@@ -31,7 +32,7 @@ func getWork(stub *rpc.SlaveServiceClient, result *Result) (*bvttt.State, *Resul
 		return nil, nil, err
 	}
 	// deserialize game state in response
-	state := new(bvttt.State)
+	state := new(gameImpl.State)
 	err = state.DecodeState(response.GetState())
 	if err != nil {
 		log.Fatalf("error in decoding state: %v\n", err)
@@ -53,8 +54,7 @@ func main() {
 		log.Printf("work: %+v\n", state)
 
 		// analyze state and save the value to the lastResult
-		maxDepth := 15
-		value, _, numStatesAnalyzed := minimax.Minimax(state, maxDepth)
+		value, _, numStatesAnalyzed := minimax.TimeLimitedAlphaBeta(state, time.Second)
 		result.Value = value
 		lastResult = result
 		log.Printf("value: %v\n", value)

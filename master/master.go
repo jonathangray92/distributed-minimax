@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/jonathangray92/distributed-minimax/bvttt"
+	"sync/atomic"
+	gameImpl "github.com/jonathangray92/distributed-minimax/connect4"
 	"github.com/jonathangray92/distributed-minimax/game"
 	rpc "github.com/jonathangray92/distributed-minimax/proto"
 //	"code.google.com/p/goprotobuf/proto"
@@ -11,16 +12,14 @@ import (
 
 type Result *rpc.GetWorkRequest_Result
 
-// mock user-submitted state
-// expected result: X should win in 2
-var ROOT_STATE = &bvttt.State{IsXMove: true, X: 0401, Y: 0120}
-
 // global variables
 var workQueue = make(chan game.State, 100)
 var resultAggregator ResultAggregator
+var workInProgress uint32  // 0 iff no ongoing work in progress; use atomic methods
 
 // magic protobuf declaration
 type SlaveService int
+type UserService int
 
 /**
  * RPC request code. Executed in a goroutine when a slave calls GetWork
@@ -46,6 +45,48 @@ func (t *SlaveService) GetWork(request *rpc.GetWorkRequest, response *rpc.GetWor
 }
 
 /**
+ * User-facing RPC code
+ */
+func (t *UserService) DoWork(request *rpc.DoWorkRequest, response *rpc.DoWorkResponse) error {
+	log.Printf("DoWork called")
+
+	// check and set the workInProgress global flag so that only one user's
+	// request is ever being processed
+	if !atomic.CompareAndSwapUint32(&workInProgress, workInProgress, 1) {
+		log.Printf("work already in progress, returning nil")
+		return nil
+	}
+
+	// decode state from request
+	rootState := new(gameImpl.State)
+	rootState.DecodeState(request.State)
+
+	// the result should be sent on this channel
+	bestMoveChan := make(chan []byte)
+
+	// populate work queue
+	numExpectedResults := populateWorkQueueFromRootState(workQueue, rootState)
+
+	// initialize result aggregator
+	resultAggregator = NewResultAggregator(numExpectedResults,
+		func(minState Result, maxState Result) {
+			log.Printf("minState: %+v worth %v\n", minState.State, *minState.Value)
+			log.Printf("maxState: %+v worth %v\n", maxState.State, *maxState.Value)
+			if rootState.MaximizingPlayer() {
+				bestMoveChan <- maxState.State
+			} else {
+				bestMoveChan <- minState.State
+			}
+			// set the flag to allow new user requests
+			atomic.StoreUint32(&workInProgress, 0)
+		})
+
+	// wait for best move and respond to user
+	response.Move = <-bestMoveChan
+	return nil
+}
+
+/**
  * Given a "root" game state, find all the states one ply deep and add them to
  * "queue".
  *
@@ -62,28 +103,19 @@ func populateWorkQueueFromRootState(queue chan game.State, root game.State) int 
 	return count
 }
 
+/**
+ * Main function. Boot up User and Slave services.
+ */
 func main() {
 
-	// initialize work queue
-	log.Printf("root state: %+v\n", ROOT_STATE)
-	numExpectedResults := populateWorkQueueFromRootState(workQueue, ROOT_STATE)
+	// listen for slaves on known port
+	slavePort := 14782
+	log.Printf("Slave service listening on port %v\n", slavePort)
+	go rpc.ListenAndServeSlaveService("tcp", fmt.Sprint("localhost:", slavePort), new(SlaveService))
 
-	// initialize result aggregator
-	resultAggregator = NewResultAggregator(numExpectedResults,
-		func(minState Result, maxState Result) {
-			log.Printf("minState: %+v worth %v\n", minState.State, *minState.Value)
-			log.Printf("maxState: %+v worth %v\n", maxState.State, *maxState.Value)
-			bestMove := new(bvttt.State)
-			if ROOT_STATE.MaximizingPlayer() {
-				bestMove.DecodeState(maxState.State)
-			} else {
-				bestMove.DecodeState(minState.State)
-			}
-			log.Printf("best move: %+v\n", bestMove)
-		})
-
-	// listen on known port
-	port := 14782
-	log.Printf("Slave service listening on port %v\n", port)
-	rpc.ListenAndServeSlaveService("tcp", fmt.Sprint("localhost:", port), new(SlaveService))
+	// listen for user on known port
+	// N.B. call in this goroutine so we don't exit immediately
+	userPort := 14783
+	log.Printf("User service listening on port %v\n", userPort)
+	rpc.ListenAndServeUserService("tcp", fmt.Sprint("localhost:", userPort), new(UserService))
 }
