@@ -12,8 +12,13 @@ import (
 
 type Result *rpc.GetWorkRequest_Result
 
+type work struct {
+	state game.State;
+	timeLimitMillis uint64;
+}
+
 // global variables
-var workQueue = make(chan game.State, 100)
+var workQueue = make(chan work, 100)
 var resultAggregator ResultAggregator
 var workInProgress uint32  // 0 iff no ongoing work in progress; use atomic methods
 
@@ -34,13 +39,14 @@ func (t *SlaveService) GetWork(request *rpc.GetWorkRequest, response *rpc.GetWor
 	if (request.GetResult() != nil) {
 		resultAggregator.AddResult(request.GetResult())
 	}
-	state := <-workQueue
-	bs, err := state.EncodeState()
+	work := <-workQueue
+	bs, err := work.state.EncodeState()
 	if err != nil {
 		log.Printf("error: %v\n", err)
 		return err
 	}
 	response.State = bs
+	response.TimeLimitMillis = &work.timeLimitMillis
 	return nil
 }
 
@@ -65,7 +71,8 @@ func (t *UserService) DoWork(request *rpc.DoWorkRequest, response *rpc.DoWorkRes
 	bestMoveChan := make(chan []byte)
 
 	// populate work queue
-	numExpectedResults := populateWorkQueueFromRootState(workQueue, rootState)
+	log.Printf("populating work queue")
+	numExpectedResults := populateWorkQueueFromRootState(workQueue, rootState, request.GetTimeLimitMillis())
 
 	// initialize result aggregator
 	resultAggregator = NewResultAggregator(numExpectedResults,
@@ -92,12 +99,12 @@ func (t *UserService) DoWork(request *rpc.DoWorkRequest, response *rpc.DoWorkRes
  *
  * Return the number of states appended to the queue
  */
-func populateWorkQueueFromRootState(queue chan game.State, root game.State) int {
+func populateWorkQueueFromRootState(queue chan work, root game.State, timeLimitMillis uint64) int {
 	// get states one ply deep
 	stateIter := root.MoveIterator()
 	count := 0
 	for nextState := stateIter(); nextState != nil; nextState = stateIter() {
-		queue <- nextState
+		queue <- work{nextState, timeLimitMillis}
 		count++
 	}
 	return count

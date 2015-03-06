@@ -41,6 +41,6 @@ func main() {
     defer client.Close()
 
 	// send a request
-	nextMove := makeRequest(stub, gameImpl.NewInitialState(), 1000)
+	nextMove := makeRequest(stub, gameImpl.NewInitialState(), 3000)
 	log.Printf("best move: %+v\n", nextMove)
 }
