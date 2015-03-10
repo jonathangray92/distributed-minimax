@@ -3,116 +3,35 @@ package main
 import (
 	"fmt"
 	"log"
-	"sync/atomic"
-	gameImpl "github.com/jonathangray92/distributed-minimax/connect4"
 	"github.com/jonathangray92/distributed-minimax/game"
 	rpc "github.com/jonathangray92/distributed-minimax/proto"
 //	"code.google.com/p/goprotobuf/proto"
 )
 
-type Result *rpc.GetWorkRequest_Result
+// this is not really enforced, just used for slice allocation
+const MAX_SLAVES = 100
 
-type work struct {
-	state game.State;
+// global ResultAggregator used by slave threads
+var resultAggregator ResultAggregator
+
+// global flag (0 iff no ongoing work in progress)
+// use atomic methods!!!
+var workInProgress uint32
+
+// A number of game states to analyze, and a time limit.
+// Each call to GetWork() will result in one instance of slaveWork being sent
+// to the slave node.
+type slaveWork struct {
+	states []game.State;
 	timeLimitMillis uint64;
 }
 
-// global variables
-var workQueue = make(chan work, 100)
-var resultAggregator ResultAggregator
-var workInProgress uint32  // 0 iff no ongoing work in progress; use atomic methods
+// each slave calling GetWork() adds a channel to slaveChanChan
+// when the user calls DoWork(), work for each slave will be sent over the
+// channel
+var slaveChanChan = make(chan chan slaveWork, MAX_SLAVES)
 
-// magic protobuf declaration
-type SlaveService int
-type UserService int
-
-/**
- * RPC request code. Executed in a goroutine when a slave calls GetWork
- *
- * Pops a state from the work queue and sends it to the slave for processing.
- *
- * If the slave has included a Result from past work, submit this work to the
- * aggregator.
- */
-func (t *SlaveService) GetWork(request *rpc.GetWorkRequest, response *rpc.GetWorkResponse) error {
-	log.Printf("request: %v\n", request.GetResult())
-	if (request.GetResult() != nil) {
-		resultAggregator.AddResult(request.GetResult())
-	}
-	work := <-workQueue
-	bs, err := work.state.EncodeState()
-	if err != nil {
-		log.Printf("error: %v\n", err)
-		return err
-	}
-	response.State = bs
-	response.TimeLimitMillis = &work.timeLimitMillis
-	return nil
-}
-
-/**
- * User-facing RPC code
- */
-func (t *UserService) DoWork(request *rpc.DoWorkRequest, response *rpc.DoWorkResponse) error {
-	log.Printf("DoWork called")
-
-	// check and set the workInProgress global flag so that only one user's
-	// request is ever being processed
-	if !atomic.CompareAndSwapUint32(&workInProgress, workInProgress, 1) {
-		log.Printf("work already in progress, returning nil")
-		return nil
-	}
-
-	// decode state from request
-	rootState := new(gameImpl.State)
-	rootState.DecodeState(request.State)
-
-	// the result should be sent on this channel
-	bestMoveChan := make(chan []byte)
-
-	// populate work queue
-	log.Printf("populating work queue")
-	numExpectedResults := populateWorkQueueFromRootState(workQueue, rootState, request.GetTimeLimitMillis())
-
-	// initialize result aggregator
-	resultAggregator = NewResultAggregator(numExpectedResults,
-		func(minState Result, maxState Result) {
-			log.Printf("minState: %+v worth %v\n", minState.State, *minState.Value)
-			log.Printf("maxState: %+v worth %v\n", maxState.State, *maxState.Value)
-			if rootState.MaximizingPlayer() {
-				bestMoveChan <- maxState.State
-			} else {
-				bestMoveChan <- minState.State
-			}
-			// set the flag to allow new user requests
-			atomic.StoreUint32(&workInProgress, 0)
-		})
-
-	// wait for best move and respond to user
-	response.Move = <-bestMoveChan
-	return nil
-}
-
-/**
- * Given a "root" game state, find all the states one ply deep and add them to
- * "queue".
- *
- * Return the number of states appended to the queue
- */
-func populateWorkQueueFromRootState(queue chan work, root game.State, timeLimitMillis uint64) int {
-	// get states one ply deep
-	stateIter := root.MoveIterator()
-	count := 0
-	for nextState := stateIter(); nextState != nil; nextState = stateIter() {
-		queue <- work{nextState, timeLimitMillis}
-		count++
-	}
-	return count
-}
-
-/**
- * Main function. Boot up User and Slave services.
- */
+// Main function. Boot up User and Slave services.
 func main() {
 
 	// listen for slaves on known port

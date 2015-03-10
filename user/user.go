@@ -40,7 +40,13 @@ func main() {
     }
     defer client.Close()
 
-	// send a request
-	nextMove := makeRequest(stub, gameImpl.NewInitialState(), 3000)
-	log.Printf("best move: %+v\n", nextMove)
+	// starting state
+	state := gameImpl.NewInitialState()
+
+	// get the best move
+	log.Printf("asking about state:")
+	state.PrintState()
+	bestMove := makeRequest(stub, state, 1000)
+	log.Printf("recommended move:")
+	bestMove.PrintState()
 }

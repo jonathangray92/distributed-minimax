@@ -75,7 +75,23 @@ func TestStateValue(t *testing.T) {
 	}
 }
 
-func TestBlah(t *testing.T) {
-	s := State{X:68719476736, Y:0, IsXMove:false}
-	s.PrintState()
+func TestId(t *testing.T) {
+	// X plays columns 0 and 1, and Y plays columns 2 and 3
+	state1 := NewInitialState()
+	state1 = state1.makeMove(0)
+	state1 = state1.makeMove(2)
+	state1 = state1.makeMove(1)
+	state1 = state1.makeMove(3)
+
+	// X and Y play the same columns as before but in a different order
+	state2 := NewInitialState()
+	state2 = state2.makeMove(1)
+	state2 = state2.makeMove(3)
+	state2 = state2.makeMove(0)
+	state2 = state2.makeMove(2)
+
+	// these states' Id() values should be equal
+	if state1.Id() != state2.Id() {
+		t.Error("Id() broken; %+v != %+v\n", state1.Id(), state2.Id())
+	}
 }

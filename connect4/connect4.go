@@ -117,8 +117,8 @@ func (s *State) PrintState() {
 	fmt.Printf("\n")
 }
 
-// TODO: implement this if necessary
-func (s *State) Id() interface{} { panic("Unimplemented") }
+// Use the struct itself as a unique hash value
+func (s *State) Id() interface{} { return *s }
 
 // Helper function which checks if a column is full
 // A return value of false means that a move can be made in that column

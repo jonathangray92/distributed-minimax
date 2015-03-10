@@ -1,18 +1,33 @@
 package main
 
+import (
+	"github.com/jonathangray92/distributed-minimax/game"
+	"github.com/jonathangray92/distributed-minimax/minimax"
+	"log"
+)
+
+type Result struct {
+	State game.State
+	Value game.Value
+}
+
 type ResultAggregator interface {
+
+	/**
+	 * The arg is the number of AddResult() calls that will be executed before
+	 * the callback is triggered. It should be equal to the number of jobs
+	 * created and distributed to slaves.
+	 */
+	SetExpectedResultsCount(int)
 
 	/**
 	 * Call this once to set a callback that will execute after AddResult()
 	 * has been called the given number of times.
 	 *
-	 * The callback will be called with two Result args, holding the moves that
-	 * yield the min and max value.
-	 *
-	 * The first arg is the number of AddResult() calls before the callback
-	 * is triggered.
+	 * The results of the slaves will be aggregated to determine the best move
+	 * for the user. The callback will be called with this best move.
 	 */
-	SetCallback(int, func(Result, Result))
+	SetCallback(func(game.State))
 
 	/**
 	 * Call this with a new result delivered by a slave
@@ -24,32 +39,48 @@ type ResultAggregator interface {
 }
 
 type resultAggregatorImpl struct {
+	rootState game.State
+	resultMap map[interface{}]game.Value  // interface{} is the return type of game.State.Id()
+	resultChan chan Result
 	remainingCalls int
-	minMove, maxMove Result
-	callback func(Result, Result)
+	callback func(game.State)
 }
 
-func (r *resultAggregatorImpl) SetCallback(numCalls int, callback func(Result, Result)) {
+func (r *resultAggregatorImpl) SetExpectedResultsCount(numCalls int) {
 	r.remainingCalls = numCalls
+}
+
+func (r *resultAggregatorImpl) SetCallback(callback func(game.State)) {
 	r.callback = callback
 }
 
 func (r *resultAggregatorImpl) AddResult(result Result) {
-	if r.minMove == nil || *result.Value < *r.minMove.Value {
-		r.minMove = result
-	}
-	if r.maxMove == nil || *result.Value > *r.maxMove.Value {
-		r.maxMove = result
-	}
-	r.remainingCalls--
-	if r.remainingCalls == 0 {
-		go r.callback(r.minMove, r.maxMove)
+	log.Printf("AddResult %+v\n", result.State.Id())
+	r.resultChan <- result
+}
+
+// this should be run exactly once in a separate goroutine so that map accesses
+// are sync'd
+func (r *resultAggregatorImpl) aggregate() {
+	for {
+		result := <-r.resultChan
+		r.resultMap[result.State.Id()] = result.Value
+		r.remainingCalls--
+		if r.remainingCalls == 0 {
+			_, bestMove, _ := minimax.AlphaBetaWithValueMap(r.rootState, r.resultMap)
+			r.callback(bestMove)
+		}
 	}
 }
 
-func NewResultAggregator(numCalls int, callback func(Result, Result)) ResultAggregator {
+func NewResultAggregator(rootState game.State, numCalls int, callback func(game.State)) ResultAggregator {
 	aggregator := new(resultAggregatorImpl)
-	aggregator.SetCallback(numCalls, callback)
+	aggregator.rootState = rootState
+	aggregator.resultMap = make(map[interface{}]game.Value)
+	aggregator.resultChan = make(chan Result, numCalls)
+	aggregator.SetExpectedResultsCount(numCalls)
+	aggregator.SetCallback(callback)
+	go aggregator.aggregate()
 	return aggregator
 }
 

@@ -6,67 +6,125 @@ import (
 	proto "code.google.com/p/goprotobuf/proto"
 	rpc "github.com/jonathangray92/distributed-minimax/proto"
 	"github.com/jonathangray92/distributed-minimax/game"
-	gameImpl "github.com/jonathangray92/distributed-minimax/connect4"
 	minimax "github.com/jonathangray92/distributed-minimax/minimax"
+
+	// change this line and re-build to make this work with different games
+	// this must be a package which includes a type called State that implements
+	// the State interface from the "game" package in this repo
+	gameImpl "github.com/jonathangray92/distributed-minimax/connect4"
 )
 
 type Result struct {
-	State []byte
+	State game.State
 	Value game.Value
+	NumStatesAnalyzed int
 }
 
-func getWork(stub *rpc.SlaveServiceClient, result *Result) (*gameImpl.State, time.Duration, *Result, error) {
-	// create request
+// helper to handle making a GetWork RPC call
+// returns a list of game states to work and a time limit
+func getWork(stub *rpc.SlaveServiceClient, results []Result) ([]game.State, time.Duration, error) {
+
 	var request rpc.GetWorkRequest
 	var response rpc.GetWorkResponse
-	if result != nil {
-		request.Result = &rpc.GetWorkRequest_Result {
-			State: result.State,
-			Value: proto.Int32(int32(result.Value)),
-		}
-	}
+	log.Printf("calling GetWork\n")
+
+	// encode results of previous round
+	request.Result = encodeResults(results)
+
 	// make request
-	log.Printf("GetWork\n")
 	err := stub.GetWork(&request, &response)
-	log.Printf("GotWork\n")
 	if err != nil {
 		log.Fatalf("master service responded with error: %v\n", err)
-		return nil, 0, nil, err
+		return nil, 0, err
 	}
-	// deserialize game state and time limit from response
-	state := new(gameImpl.State)
-	err = state.DecodeState(response.GetState())
-	if err != nil {
-		log.Fatalf("error in decoding state: %v\n", err)
-		return nil, 0, nil, err
-	}
-	timeLimitDuration := time.Duration(response.GetTimeLimitMillis()) * time.Millisecond
-	log.Printf("timeLimitDuration %v\n", timeLimitDuration)
 
-	return state, timeLimitDuration, &Result{State: response.GetState()}, nil
+	// deserialize response states
+	return decodeGetWorkResponse(response)
 }
 
+// Main function: connect to master node and do work endlessly
 func main() {
+
+	// connect to master node
 	stub, client, err := rpc.DialSlaveService("tcp", "localhost:14782")
 	if err != nil {
 		log.Fatalf("dialing master service failed: %v\n", err)
 	}
 	defer client.Close()
 
-	var lastResult *Result = nil
+	// endlessly get work, do work, and return results
+	var lastResults []Result = nil
 	for {
-		state, timeLimit, result, err := getWork(stub, lastResult)
+		// get job states and time limit
+		states, timeLimit, err := getWork(stub, lastResults)
 		if err != nil {
 			log.Fatalf("getWork returned err %v\n", err)
 		}
-		log.Printf("work: %+v\n", state)
+		log.Printf("analyzing %v states in %v\n", len(states), timeLimit)
 
-		// analyze state and save the value to the lastResult
-		log.Printf("starting minimax with time limit %v\n", timeLimit)
-		value, _, numStatesAnalyzed := minimax.TimeLimitedAlphaBeta(state, timeLimit)
-		result.Value = value
-		lastResult = result
-		log.Printf("value: %v\n", value)
-		log.Printf("numStatesAnalyzed: %v\n", numStatesAnalyzed)
+		// spawn a goroutine for each job
+		// each goroutine is passed the same channel over which to send results
+		resultsChan := make(chan Result, len(states))
+		for _, state := range states {
+			go func(state game.State) {
+				value, _, numStatesAnalyzed := minimax.TimeLimitedAlphaBeta(state, timeLimit)
+				resultsChan <- Result{
+					State: state,
+					Value: value,
+					NumStatesAnalyzed: numStatesAnalyzed,
+				}
+			}(state)
+		}
+
+		// wait for the correct number of results to come over the channel
+		lastResults = make([]Result, len(states))
+		for i := range states {
+			lastResults[i] = <-resultsChan
+		}
 	}
 }
+
+// convert a slice of Result structs to protobuf format
+func encodeResults(results []Result) []*rpc.GetWorkRequest_Result {
+
+	// allocate space
+	encodedResults := make([]*rpc.GetWorkRequest_Result, len(results))
+
+	// encode each result
+	for i, result := range results {
+		encodedState, err := result.State.EncodeState()
+		if err != nil {
+			log.Fatalf("error encoding result state %+v\n", result.State)
+		}
+		encodedResults[i] = &rpc.GetWorkRequest_Result{
+			State: encodedState,
+			Value: proto.Int32(int32(result.Value)),
+			NumStatesAnalyzed: proto.Int32(int32(result.NumStatesAnalyzed)),
+		}
+	}
+
+	return encodedResults
+}
+
+// convert a protobuf GetWorkResponse to a slice of states to work and a time
+// limit
+func decodeGetWorkResponse(response rpc.GetWorkResponse) ([]game.State, time.Duration, error) {
+
+	// decode each work state
+	encodedStates := response.GetState()
+	decodedStates := make([]game.State, len(encodedStates))
+	for i, s := range encodedStates {
+		decodedStates[i] = new(gameImpl.State)
+		err := decodedStates[i].DecodeState(s)
+		if err != nil {
+			log.Fatalf("error in decoding state: %v\n", err)
+			return nil, 0, err
+		}
+	}
+
+	// convert time limit to time.Duration
+	timeLimit := time.Duration(response.GetTimeLimitMillis()) * time.Millisecond
+
+	return decodedStates, timeLimit, nil
+}
+
