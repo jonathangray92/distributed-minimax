@@ -16,12 +16,12 @@ func TestGetChanContentsAsSlice(t *testing.T) {
 	}
 }
 
-// given 1 slave, the root state should be used and not expanded
+// given 1 slave, the root state should be not be used and must be expanded
 func TestCreateJobsFromRootStateWith1Slave(t *testing.T) {
 	rootState := connect4.NewInitialState()
 	jobs := createJobsFromRootState(rootState, 1)
-	if len(jobs) != 1 {
-		t.Fatal("should not have expanded root state")
+	if len(jobs) == 1 {
+		t.Fatal("should have expanded root state")
 	}
 }
 

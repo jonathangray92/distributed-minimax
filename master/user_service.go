@@ -90,8 +90,16 @@ func createJobsFromRootState(rootState game.State, numSlaves int) []game.State {
     jobs := make([]game.State, 0, 2*numSlaves)
     jobs = append(jobs, rootState)
 
-    // pop the head node and push its children until we have enough jobs
-    for ; len(jobs) < numSlaves; {
+	// pop the head node and push its children until we have enough jobs
+	//
+	// N.B. we require that the root state is expanded at least one ply, even
+	// if there is only one slave. Currently, the slaves send only the
+	// resulting value of each job state, not the corresponding best move. If a
+	// single slave works the root state and sends its value, the master does
+	// not know which move to make. The simplest workaround is to ensure that
+	// the root state is never worked directly by always expanding at least one
+	// ply
+    for ; len(jobs) == 1 || len(jobs) < numSlaves; {
         head := jobs[0]
         jobs = jobs[1:]
         stateIter := head.MoveIterator()
