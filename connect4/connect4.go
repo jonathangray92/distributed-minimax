@@ -76,7 +76,7 @@ func (s *State) MoveIterator() game.StateIterator {
 			// or not we return. Just increment it now and return (column - 1)
 			column += 1
 			if !s.isColumnFull(column-1) {
-				return s.makeMove(column-1)
+				return s.MakeMove(column-1)
 			}
 		}
 		return nil
@@ -129,7 +129,7 @@ func (s *State) isColumnFull(column uint) bool {
 // Helper function which makes a move by dropping a piece into the given column
 // DOES NOT check that the column is not already full! Assumes the caller
 // checked.
-func (s *State) makeMove(column uint) *State {
+func (s *State) MakeMove(column uint) *State {
 
 	// calculate which spots are occupied by either player
 	occupied := s.X | s.Y

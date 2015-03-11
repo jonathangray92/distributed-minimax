@@ -42,11 +42,18 @@ func main() {
 
 	// starting state
 	state := gameImpl.NewInitialState()
+	state = state.MakeMove(3)
+	state = state.MakeMove(3)
+	state = state.MakeMove(4)
+	state = state.MakeMove(2)
+	state = state.MakeMove(4)
+	state = state.MakeMove(4)
+	state = state.MakeMove(5)
 
 	// get the best move
 	log.Printf("asking about state:")
 	state.PrintState()
-	bestMove := makeRequest(stub, state, 1000)
+	bestMove := makeRequest(stub, state, 3000)
 	log.Printf("recommended move:")
 	bestMove.PrintState()
 }
