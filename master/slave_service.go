@@ -24,10 +24,12 @@ func (t *SlaveService) GetWork(request *rpc.GetWorkRequest, response *rpc.GetWor
 
     // decode and handle results of previous work, if provided
 	for _, encodedResult := range request.GetResult() {
-		var decodedResult Result
-		decodedResult.State = new(gameImpl.State)
+		decodedResult := Result{
+			State: new(gameImpl.State),
+			Value: game.Value(encodedResult.GetValue()),
+			NumStatesAnalyzed: uint64(encodedResult.GetNumStatesAnalyzed()),
+		}
 		decodedResult.State.DecodeState(encodedResult.GetState())
-		decodedResult.Value = game.Value(encodedResult.GetValue())
 		resultAggregator.AddResult(decodedResult)
 	}
 

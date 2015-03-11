@@ -99,7 +99,7 @@ func encodeResults(results []Result) []*rpc.GetWorkRequest_Result {
 		encodedResults[i] = &rpc.GetWorkRequest_Result{
 			State: encodedState,
 			Value: proto.Int32(int32(result.Value)),
-			NumStatesAnalyzed: proto.Int32(int32(result.NumStatesAnalyzed)),
+			NumStatesAnalyzed: proto.Int64(int64(result.NumStatesAnalyzed)),
 		}
 	}
 

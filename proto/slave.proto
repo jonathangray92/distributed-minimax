@@ -6,7 +6,7 @@ message GetWorkRequest {
     message Result {
         required bytes state = 1;
         required int32 value = 2;  // should match Value type in game/game.go
-        required int32 numStatesAnalyzed = 3;
+        required int64 numStatesAnalyzed = 3;
     }
     // optionally return the results of a previous workload
     repeated Result result = 1;

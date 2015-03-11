@@ -9,6 +9,7 @@ import (
 type Result struct {
 	State game.State
 	Value game.Value
+	NumStatesAnalyzed uint64
 }
 
 type ResultAggregator interface {
@@ -42,6 +43,7 @@ type resultAggregatorImpl struct {
 	rootState game.State
 	resultMap map[interface{}]game.Value  // interface{} is the return type of game.State.Id()
 	resultChan chan Result
+	numStatesAnalyzed uint64
 	remainingCalls int
 	callback func(game.State)
 }
@@ -65,8 +67,10 @@ func (r *resultAggregatorImpl) aggregate() {
 	for {
 		result := <-r.resultChan
 		r.resultMap[result.State.Id()] = result.Value
+		r.numStatesAnalyzed += result.NumStatesAnalyzed
 		r.remainingCalls--
 		if r.remainingCalls == 0 {
+			log.Printf("all results submitted; %v states analyzed by all slaves\n", r.numStatesAnalyzed)
 			_, bestMove, _ := minimax.AlphaBetaWithValueMap(r.rootState, r.resultMap)
 			r.callback(bestMove)
 		}
