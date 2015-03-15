@@ -37,11 +37,11 @@ func main() {
 	// listen for slaves on known port
 	slavePort := 14782
 	log.Printf("Slave service listening on port %v\n", slavePort)
-	go rpc.ListenAndServeSlaveService("tcp", fmt.Sprint("localhost:", slavePort), new(SlaveService))
+	go rpc.ListenAndServeSlaveService("tcp", fmt.Sprint("0.0.0.0:", slavePort), new(SlaveService))
 
 	// listen for user on known port
 	// N.B. call in this goroutine so we don't exit immediately
 	userPort := 14783
 	log.Printf("User service listening on port %v\n", userPort)
-	rpc.ListenAndServeUserService("tcp", fmt.Sprint("localhost:", userPort), new(UserService))
+	rpc.ListenAndServeUserService("tcp", fmt.Sprint("0.0.0.0:", userPort), new(UserService))
 }
