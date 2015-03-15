@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"flag"
 	"log"
 	"time"
 	proto "code.google.com/p/goprotobuf/proto"
@@ -45,8 +47,14 @@ func getWork(stub *rpc.SlaveServiceClient, results []Result) ([]game.State, time
 // Main function: connect to master node and do work endlessly
 func main() {
 
+	// read command-line args
+	var host = flag.String("host", "localhost", "the address of the master node")
+	flag.Parse()
+
 	// connect to master node
-	stub, client, err := rpc.DialSlaveService("tcp", "localhost:14782")
+	hostAndPort := fmt.Sprint(*host, ":14782")
+	log.Printf("attemping connect to master at %s\n", hostAndPort)
+	stub, client, err := rpc.DialSlaveService("tcp", hostAndPort)
 	if err != nil {
 		log.Fatalf("dialing master service failed: %v\n", err)
 	}
