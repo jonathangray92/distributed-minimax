@@ -1,0 +1,367 @@
+\documentclass[pdftex,12pt,a4paper]{article}
+\usepackage[margin=1cm]{caption}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{framed}
+\usepackage[bottom]{footmisc}
+\usepackage[parfill]{parskip}
+
+\geometry{margin=1in}
+\linespread{1.3}
+\lstset{basicstyle=\ttfamily}
+\setlength{\skip\footins}{0.5cm}
+
+\begin{document}
+
+%
+% Title Page
+%
+\begin{titlepage}
+\vspace*{\fill}
+\begin{center}
+
+{\Large ECE496 Final Report}
+
+\rule{\linewidth}{0.5mm}\\[0.3cm]
+\textsc{\Huge Distributed Minimax}
+\rule{\linewidth}{0.5mm}\\[0.3cm]
+
+{\normalsize Project No. 307}\\[1cm]
+
+\begin{multicols}{2}
+\begin{flushleft}
+\emph{Authors:}\\[0.1cm]
+Steven \textsc{Blenkinsop} (123456789)\\[0.1cm]
+Jonathan \textsc{Gray} (998198588)\\
+\end{flushleft}
+\columnbreak
+\begin{flushright}
+\emph{Supervisor:}\\[0.1cm]
+Prof. Jorg \textsc{Liebeherr}\\[0.3cm]
+\emph{Administrator:}\\[0.1cm]
+John \textsc{Taglione}\\
+\end{flushright}
+\end{multicols}
+
+\vfill
+{\large Submitted March 19, 2015}
+
+\end{center}
+\vspace*{\fill}
+\end{titlepage}
+
+%
+% Executive Summary
+%
+\section{Executive Summary}
+
+%
+% Group Highlights and Individual Contributions
+%
+\pagebreak
+\section{Group Highlights and Individual Contributions}
+
+%
+% Table of Contents
+%
+\pagebreak
+\section{Table of Contents}
+\renewcommand*
+\contentsname{}
+\tableofcontents
+\pagebreak
+
+%
+% Background and Motivation
+%
+\section{Background and Motivation}
+Some of the earliest software written for programmable computers sought to enable them to play abstract strategy games such as chess and checkers [1]. In the late 1940s, artificial intelligence pioneers like Claude Shannon, John von Neumann, and Alan Turing independently developed game-playing algorithms that relied on the concept of “minimaxing”, an optimal algorithm for game-playing which searches for the most advantageous move assuming the opponent plays perfectly [2].
+
+Parallelization of general-purpose computation on a graphics processing unit (GPU) has been popular for the last 15 years, but GPU frameworks and hardware remain complicated and expensive compared to central processing unit (CPU) cluster technology [3]. Recently, researchers have developed algorithms to parallelize the minimax algorithm on GPUs and on CPU clusters [4][5]. Given the availability and low cost of commodity server hardware and cloud computing platforms, and the relative ease with which commodity-grade processors can be replaced or added to a cluster, CPU clusters are often preferable to GPUs in achieving scalable parallelization of general-purpose computing [6]. For these reasons, we have focused on CPU clusters for this project.
+
+This project aimed to produce a software framework for distributing the execution of the minimax algorithm over an arbitrarily-sized cluster of computers. The framework allows an end-user to describe the game tree and provide heuristics for evaluating the state of a game that has not yet terminated, while abstracting away the mechanics of the distributed nature of the computation. It also provides a simple interface to add, remove, and replace computers participating in the minimax search. 
+
+The primary motivation for this project was the group members’ interest in game artificial intelligence and distributed systems.
+
+%
+% Project Goal
+%
+\section{Project Goal}
+
+The goal of this project was to create a software framework with which a user can distribute the evaluation of a user-defined perfect-information zero-sum sequential game using the minimax algorithm over an arbitrary number of computers.
+
+%
+% Project Requirements
+%
+\section{Project Requirements}
+
+\subsection{Functional Requirements}
+
+The design shall:
+\begin{enumerate}
+\item correctly implement the minimax algorithm for user-defined perfect-information zero-sum sequential games
+\item allow for distributing evaluation over a number of nodes between 2 and 10\footnote{TODO}; and
+\item allow the user to set a time limit (at least 1 second) on the computation
+\end{enumerate}
+
+\subsection{Constraints}
+
+The resulting software must be executable on all of:
+\begin{enumerate}
+\item Mac OS 10.9 or above
+\item Windows 8.1 or above
+\item Ubuntu 14.04 or above
+\end{enumerate}
+
+\subsection{Objectives}\label{sec:objectives}
+
+The resulting software should:
+\begin{enumerate}
+\item evaluate more game states per unit of time compared to an equivalent implementation of the minimax algorithm running on single computer
+\item\label{itm:obj-efficiency} efficiently utilize processors of different speeds
+\end{enumerate}
+
+
+\section{Final Design}
+
+Section~\ref{sec:system} provides an overview of the final design and the interactions between the various modules.
+
+Following that, Section~\ref{sec:modules} provides a more detailed description about the major design components and processes described in the system overview.
+
+%
+% System-Level Overview
+%
+\subsection{System-Level Overview}\label{sec:system}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{img/component-diagram}
+\caption{Component diagram for the distributed minimax service showing the separation of \emph{user}, \emph{master}, and \emph{slave} processes}
+\label{fig:component-diagram}
+\end{center}
+\end{figure}
+
+A single \emph{master} process and a number of identical \emph{slave} processes communicate with each other to provide a network \emph{service} to a \emph{user} process. As illustrated in Figure~\ref{fig:component-diagram}, the \emph{user} and the \emph{slaves} communicate only with the \emph{master} (over the \emph{User-Master RPC} and \emph{Master-Slave RPC}, respectively) and not with each other.
+
+On receiving a request from the \emph{user} over the \emph{User-Master RPC}, the \emph{master} creates a \emph{job pool} by breaking down the Minimax algorithm into discrete jobs that can be performed concurrently, and distributes these jobs to the slaves over the \emph{Master-Slave RPC}. The \emph{slaves} execute their jobs and return the results of their analyses to the \emph{master}. The \emph{master} consolidates these results into a single \emph{best move} suggestion and returns this to the \emph{user}.
+
+
+%
+% Module-Level Descriptions
+%
+\subsection{Module-Level Descriptions}\label{sec:modules}
+
+This section gives a formal description of the major modules referenced in the previous section. Each module's inputs and outputs are listed along with a brief description of the module's purpose. The final design of each module is also described, and areas for potential improvement are noted in some cases.
+
+% User-Master RPC
+\subsubsection{User-Master RPC}
+
+\paragraph{Module Inputs:}
+\begin{itemize}
+\item Serialized game state
+\item Time limit
+\end{itemize}
+
+\paragraph{Module Outputs:}
+\begin{itemize}
+\item Suggestion for best move
+\end{itemize}
+
+\paragraph{Module Description:\\}
+This module represents network interaction between the \emph{user} and the \emph{master}.
+
+The user makes a request to the master with a serialized game state and a maximum time allowed. The Master node is expected to confer with the slaves and respond within the time limit with its suggestion for a move to be played.
+
+\paragraph{Final Design:\\}
+The open-source \emph{Protobuf}\footnote{TODO} library was used to describe the message formats and generate RPC code. For an exact specification of the RPC, see Section~\ref{sec:protobuf-sample} in Appendix C.
+
+% Job Pool Creation
+\subsubsection{Job Pool Creation}
+
+\paragraph{Module Inputs:}
+\begin{itemize}
+\item Game state to be analyzed
+\item A set of slaves that are available to do work
+\end{itemize}
+
+\paragraph{Module Outputs:}
+\begin{itemize}
+\item A set of jobs that can be worked independently and concurrently
+\end{itemize}
+
+\paragraph{Module Description:\\}
+This module is a component of the \emph{master}.
+
+Given a game state, this module generates a set of jobs that can be worked independently. The number of jobs created will depend on the number of slaves available to do work. In particular, it should produce at least as many jobs as there are slaves, so no slave is left with no work to do.
+
+\paragraph{Final Design:\\}
+A \emph{job} in the final design is a game state that is a descendent\footnote{The "children" of a game state are the game states that can be reached by making a single move. For example, an empty tic-tac-toe board has nine children, representing a piece played in each of the nine empty spots. The "descendents" of a game state are its children, its children's children, etc.} of the game state to be analyzed. This module will examine the direct descendents of the viven game state, then each of their direct descendents, etc., until the number of descendents is greater than the number of slaves. When that condition is met, these game states are returned as jobs.
+
+
+% Job Allocation
+\subsubsection{Job Allocation}
+
+\paragraph{Module Inputs:}
+\begin{itemize}
+\item A set of jobs that can be worked independently and concurrently
+\item A set of \emph{slaves} that are available to do work
+\end{itemize}
+
+\paragraph{Module Outputs:}
+\begin{itemize}
+\item Exactly one \emph{slave} assigned to each job
+\end{itemize}
+
+\paragraph{Module Description:\\}
+This module is a component of the \emph{master}.
+
+Given a set of jobs and a set of \emph{slaves}, this module decides which \emph{slaves} will work on which jobs.
+
+\paragraph{Final Design:\\}
+The final design assigns jobs to slaves in a round-robin fashion. For example, if there are 10 jobs and 7 slaves, then the first three slaves will be assigned two jobs each, and the other four slaves will be assigned only one job. This method ensures that the \emph{number} of jobs assigned to each slave is fairly even, but is agnostic about \emph{which} jobs are assigned to which slave.
+
+This is a major area for improvement. Given more time, this module should attempt to measure the relative importance of jobs and the effectiveness of slaves at performing work, and assign more important jobs to more effective slaves.
+
+% Master-Slave RPC
+\subsubsection{Master-Slave RPC}
+
+\paragraph{Module Inputs:}
+\begin{itemize}
+\item A set of jobs
+\item Time Limit
+\end{itemize}
+
+\paragraph{Module Outputs:}
+\begin{itemize}
+\item Result of analysis for each job
+\end{itemize}
+
+\paragraph{Module Description:\\}
+This module represents network interaction between the \emph{master} and the \emph{slaves}.
+
+The master delivers to each slave a set of jobs to be performed and a maximum time allowed. The slaves return their results to the Master within the allowed time.
+
+This module deals primarily with serialization and communication with the master node, while the \emph{Slave Work} module below deals primarily with performing analysis.
+
+\paragraph{Final Design:\\}
+The open-source \emph{Protobuf}\footnote{TODO} library was used to describe the message formats and generate RPC code. For an exact specification of the RPC, see Section~\ref{sec:protobuf-sample} in Appendix C.
+
+
+
+% Slave Work
+\subsubsection{Slave Work}
+
+\paragraph{Module Inputs:}
+\begin{itemize}
+\item A set of jobs
+\item Time Limit
+\end{itemize}
+
+\paragraph{Module Outputs:}
+\begin{itemize}
+\item Result of analysis for each job
+\end{itemize}
+
+\paragraph{Module Description:\\}
+This module performs executes the jobs that were allocated by the \emph{master}. This involves running the Minimax algorithm on subsets of the game tree. The results of the jobs are returned to the \emph{Master-Slave RPC} module to be returned to the \emph{master}.
+
+
+% Result Consolidation
+\subsubsection{Result Consolidation}
+
+\paragraph{Module Inputs:}
+\begin{itemize}
+\item Results of analysis for each job
+\end{itemize}
+
+\paragraph{Module Outputs:}
+\begin{itemize}
+\item Suggestion for best move
+\end{itemize}
+
+\paragraph{Module Description:\\}
+This module combines the results of the analyses that the \emph{slaves} performed to produce a single best move suggestion to return to the user.
+
+%
+%
+%
+\section{Testing and Verification}
+
+%
+%
+%
+\section{Summary and Conclusions}
+
+%
+%
+%
+\pagebreak
+\section{References}
+
+%
+%
+%
+\pagebreak
+\section{Appendix A: Gantt Chart History}
+
+%
+%
+%
+\pagebreak
+\section{Appendix B: Original Validation and Acceptance Tests}
+
+%
+% Appendix C: Code Samples
+%
+\pagebreak
+\section{Appendix C: Code Samples}
+
+This appendix includes raw samples of code from the project to serve as further information for interested developers, and as proof of work for ECE496 administrators.
+
+\subsection{Protobuf Specifications}\label{sec:protobuf-sample}
+
+\subsubsection*{User-Master RPC}
+\begin{framed}
+\begin{lstlisting}
+message DoWorkRequest {
+    required bytes state = 1;
+    required uint64 timeLimitMillis = 2;
+}
+
+message DoWorkResponse {
+    required bytes move = 1;  // suggestion for next state
+}
+
+service UserService {
+    rpc DoWork(DoWorkRequest) returns (DoWorkResponse);
+}
+\end{lstlisting}
+\end{framed}
+
+\subsubsection*{Master-Slave RPC}
+\begin{framed}
+\begin{lstlisting}
+message GetWorkRequest {
+    message Result {
+        required bytes state = 1;
+        required int32 value = 2;  // should match Value type in game/game.go
+        required int64 numStatesAnalyzed = 3;
+    }
+    // optionally return the results of a previous workload
+    repeated Result result = 1;
+}
+
+message GetWorkResponse {
+    repeated bytes state = 1;
+    required uint64 timeLimitMillis = 2;
+}
+
+service SlaveService {
+    rpc GetWork(GetWorkRequest) returns (GetWorkResponse);
+}
+\end{lstlisting}
+\end{framed}
+
+\end{document}
