@@ -104,7 +104,7 @@ The design shall:
 \begin{enumerate}
 \item correctly implement the minimax algorithm for user-defined perfect-information zero-sum sequential games
 \item allow for distributing evaluation over a number of nodes between 2 and 10\footnote{TODO}; and
-\item allow the user to set a time limit (at least 1 second) on the computation
+\item allow the user to set a time limit (at least 1 second) on the computation, and enforce this time limit within 0.5 seconds.
 \end{enumerate}
 
 \subsection{Constraints}
@@ -311,6 +311,7 @@ TODO
 
 \subsection{\textbf{Requirement:} \emph{allow for distribution over a number of nodes between 2 and 10}}
 
+% Test
 \subsubsection{\textbf{Test:} Two-Node Cluster}
 
 \paragraph{Test description:} Analyze a Connect-4 game state using a cluster of 2 slaves
@@ -335,6 +336,7 @@ Included here is the raw log output from the user process (Figure~\ref{fig:duo-u
 
 We can verify that this is a 2-slave cluster in line 8 of Figure~\ref{fig:duo-master-3}. We can further verify that the analsyis completed without error and that the result of the analysis (at the bottom of Figure~\ref{fig:duo-user-3} was an optimal move\footnote{The rules of Connect-4 are not included in this document, but are widely available. In this case, the recommended move is optimal because any other move would lead to an immediate win by X playing in the same spot.}. Since the analysis completed successfully and without error for a cluster of 2 slaves, this test is considered to have passed.
 
+% Test
 \subsubsection{\textbf{Test:} Ten-Node Cluster}
 
 \paragraph{Test description:} Analyze a Connect-4 game state using a cluster of 10 slaves
@@ -353,15 +355,65 @@ A cluster of 10 slaves was used to analyze the same Connect-4 state, and the sam
 
 It can be seen in this log output that 10 slaves are used. Since the analysis completed successfully and without error using a cluster of 10 slaves, this test is considered to have passed.
 
-\subsection{\textbf{Requirement:} \emph{allow the user to set a time limit on the computation}}
+% Test
+\subsection{\textbf{Requirement:} \emph{allow the user to set a time limit on the computation; enforce within 0.5 seconds}}
+
+\subsubsection{\textbf{Test:} Time limit of 3 seconds}
+
+\paragraph{Test description:} Analyze a Connect-4 game state using an imposed time limit of 3 seconds. 
+
+\paragraph{Pass Criteria:} The result is returned in at most 3.5 seconds.
+
+\paragraph{Test Result:} PASS
+
+Figure~\ref{fig:duo-user-3} shows the output of the user process when this test was run. Line 9 shows that the request was made with a limit of 3 seconds, and line 10 shows that the response was returned in 3.18 seconds. Since the time limit was enforced within 0.5 seconds, this test is considered to have passed.
+
+% Test
+\subsubsection{\textbf{Test:} Time limit of 10 seconds}
+
+\paragraph{Test description:} Analyze a Connect-4 game state using an imposed time limit of 10 seconds. 
+
+\paragraph{Pass Criteria:} The result is returned in at most 10.5 seconds.
+
+\paragraph{Test Result:} PASS
+
+Figure~\ref{fig:user-10} shows the output of the user process when this test was run. Line 9 shows that the request was made with a limit of 10 seconds, and line 10 shows that the response was returned in 10.16 seconds. Since the time limit was enforced within 0.5 seconds, this test is considered to have passed.
+
+\begin{figure}[h]
+\lstinputlisting[firstline=2]{../aws/logs/user-10.log}
+\caption{The output of the user process with a specified time limit of 10 seconds.}
+\label{fig:user-10}
+\end{figure}
+
 
 % Tests: Constraints
 
 \subsection{\textbf{Constraint:} \emph{must be executable on Mac OS 10.9, Windows 8.1, and Ubuntu 14.04}}
 
+TODO
+
 % Tests: Objectives
 
-\subsection{\textbf{Objective:} \emph{evaluate more game tree nodes than the non-distributed implementation}}
+\subsection{\textbf{Objective:} \emph{evaluate more game states than the non-distributed implementation}}
+
+\paragraph{Test description:} Analyze the same Connect-4 state using (1) a cluster of 10 slaves, and (2) a single computer. Ensure that the single computer is given the same processing time as the cluster took for communication, coordination, and processing combined. Measure the number of game states analyzed during the computations.
+
+\paragraph{Pass Criteria:} The cluster of 10 slaves analyzes more game states than the single computer.
+
+\paragraph{Test Result:} PASS
+
+The number of states analyzed was measured for four analyses: with 10 slaves, given 3 seconds and given 10 seconds, and with 1 slave given the same time constraints. The results are shown in Figure~\ref{fig:number-analyzed}.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{img/number-analyzed}
+\caption{The number of states analyzed by two slave clusters (one with a single computer, the other with 10 slaves) given 3 seconds and 10 seconds}
+\label{fig:number-analyzed}
+\end{center}
+\end{figure}
+
+Note that for both time limits, the cluster of 10 slaves analyzed more states than the single computer. For this reason, this test is considered to have passed, and the objective met. 
+
 
 \subsection{\textbf{Objective:} \emph{should maximize throughput on different combinations of fast and slow processors}}
 
