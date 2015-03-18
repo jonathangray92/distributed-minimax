@@ -95,7 +95,7 @@ The goal of this project was to create a software framework with which a user ca
 %
 % Project Requirements
 %
-\section{Project Requirements}
+\section{Project Requirements}\label{sec:requirements}
 
 \subsection{Functional Requirements}
 
@@ -265,7 +265,12 @@ The open-source \emph{Protobuf}\footnote{TODO} library was used to describe the 
 \end{itemize}
 
 \paragraph{Module Description:\\}
-This module performs executes the jobs that were allocated by the \emph{master}. This involves running the Minimax algorithm on subsets of the game tree. The results of the jobs are returned to the \emph{Master-Slave RPC} module to be returned to the \emph{master}.
+This module is a component of the \emph{slaves}.
+
+This module performs executes the jobs that were allocated by the master. This involves running the Minimax algorithm on subsets of the game tree. The results of the jobs are returned to the \emph{Master-Slave} RPC module to be returned to the master.
+
+\paragraph{Final Design:\\}
+This module receives a set of game states to analyze and a time limit, and produces a heuristic evaluation of each game state. For each game state, concurrently, it will run an iterative-deepening Minimax algorithm\footnote{The Minimax algorithm is run first with a cut-off depth of 1, then 2, then 3, etc. until time runs out.}, analyzing to increasing depths until time runs out. When the time limit has elapsed, the results of the last complete iteration for each game state are returned.
 
 
 % Result Consolidation
@@ -282,12 +287,40 @@ This module performs executes the jobs that were allocated by the \emph{master}.
 \end{itemize}
 
 \paragraph{Module Description:\\}
-This module combines the results of the analyses that the \emph{slaves} performed to produce a single best move suggestion to return to the user.
+This module is a component of the \emph{master}.
+
+This module combines the results of the analyses that the slaves performed to produce a single best move suggestion to return to the user.
+
+\paragraph{Final Design:\\}
+Given a set of game states that are descendents of the "parent" game state for which the user requested analysis, this module runs the Minimax algorithm rooted at the parent, using the slaves' heuristic evaluations. The output of this Minimax evaluation is returned to the user as the suggested best move.
+
 
 %
-%
+% Testing and Verification
 %
 \section{Testing and Verification}
+
+This section introduces a test for each requirement, constraint, and objective introduced in Section~\ref{sec:requirements}. The results of each test are included along with a short discussion concluding whether or not each requirement was met.
+
+% Tests: Functional Requirements
+
+\subsection{\textbf{Requirement:} \emph{shall correctly implement the minimax algorithm}}
+
+TODO
+
+\subsection{\textbf{Requirement:} \emph{allow for distribution over a number of nodes between 2 and 10}}
+
+\subsection{\textbf{Requirement:} \emph{allow the user to set a time limit on the computation}}
+
+% Tests: Constraints
+
+\subsection{\textbf{Constraint:} \emph{must be executable on Mac OS 10.9, Windows 8.1, and Ubuntu 14.04}}
+
+% Tests: Objectives
+
+\subsection{\textbf{Objective:} \emph{evaluate more game tree nodes than the non-distributed implementation}}
+
+\subsection{\textbf{Objective:} \emph{should maximize throughput on different combinations of fast and slow processors}}
 
 %
 %
@@ -299,6 +332,8 @@ This module combines the results of the analyses that the \emph{slaves} performe
 %
 \pagebreak
 \section{References}
+
+https://chessprogramming.wikispaces.com/Iterative+Deepening
 
 %
 %
