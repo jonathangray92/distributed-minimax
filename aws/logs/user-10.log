@@ -1,0 +1,19 @@
+~/go/src/github.com/jonathangray92/distributed-minimax/user (connect4)$ ./user 
+2015/03/15 22:51:42 asking about state:
+
+| | | | | | | |
+| | | | | | | |
+| | | | | | | |
+| | | | |O| | |
+| | | |O|X| | |
+| | |O|X|X|X| |
+2015/03/15 22:51:42 making request, time limit 10000 millis
+2015/03/15 22:51:52 rpc finished in 10.160189283s
+2015/03/15 22:51:52 recommended move:
+
+| | | | | | | |
+| | | | | | | |
+| | | | | | | |
+| | | | |O| | |
+| | | |O|X| | |
+| | |O|X|X|X|O|

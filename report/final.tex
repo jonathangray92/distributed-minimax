@@ -1,5 +1,5 @@
 \documentclass[pdftex,12pt,a4paper]{article}
-\usepackage[margin=1cm]{caption}
+\usepackage[margin=1cm,skip=0pt]{caption}
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{multicol}
@@ -10,8 +10,9 @@
 
 \geometry{margin=1in}
 \linespread{1.3}
-\lstset{basicstyle=\ttfamily}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,numbers=left,frame=single,numberstyle=\scriptsize}
 \setlength{\skip\footins}{0.5cm}
+\setlength{\floatsep}{1cm}
 
 \begin{document}
 
@@ -310,6 +311,32 @@ TODO
 
 \subsection{\textbf{Requirement:} \emph{allow for distribution over a number of nodes between 2 and 10}}
 
+\subsubsection{\textbf{Test:} Two-Node Cluster}
+
+\paragraph{Test description:} Analyze a Connect-4 game state using a cluster of 2 slaves
+
+\paragraph{Pass Criteria:} The analysis completes without error, and the result of the analysis is an optimal move.
+
+\paragraph{Test Result:} PASS
+
+Included here is the raw log output from the user process (Figure~\ref{fig:duo-user-3}) and the master process (Figure~\ref{fig:duo-master-3}) when this test was run. 
+
+\begin{figure}[h]
+\lstinputlisting[firstline=2]{../aws/logs/duo-user-3.log}
+\caption{The raw output of the user process with a 2-node slave cluster}
+\label{fig:duo-user-3}
+\end{figure}
+
+\begin{figure}[h]
+\lstinputlisting[firstline=2,lastline=11]{../aws/logs/duo-master-3.log}
+\caption{The first 10 lines of raw output of the master process with a 2-node slave cluster. The complete log is too long to list here.}
+\label{fig:duo-master-3}
+\end{figure}
+
+We can verify that this is a 2-slave cluster in line 8 of Figure~\ref{fig:duo-master-3}. We can further verify that the analsyis completed without error and that the result of the analysis (at the bottom of Figure~\ref{fig:duo-user-3} was an optimal move\footnote{The rules of Connect-4 are not included in this document, but are widely available. In this case, the recommended move is optimal because any other move would lead to an immediate win by X playing in the same spot.}.
+
+\subsubsection{\textbf{Test:} Ten-Node Cluster}
+
 \subsection{\textbf{Requirement:} \emph{allow the user to set a time limit on the computation}}
 
 % Tests: Constraints
@@ -358,7 +385,6 @@ This appendix includes raw samples of code from the project to serve as further 
 \subsection{Protobuf Specifications}\label{sec:protobuf-sample}
 
 \subsubsection*{User-Master RPC}
-\begin{framed}
 \begin{lstlisting}
 message DoWorkRequest {
     required bytes state = 1;
@@ -373,10 +399,8 @@ service UserService {
     rpc DoWork(DoWorkRequest) returns (DoWorkResponse);
 }
 \end{lstlisting}
-\end{framed}
 
 \subsubsection*{Master-Slave RPC}
-\begin{framed}
 \begin{lstlisting}
 message GetWorkRequest {
     message Result {
@@ -397,6 +421,5 @@ service SlaveService {
     rpc GetWork(GetWorkRequest) returns (GetWorkResponse);
 }
 \end{lstlisting}
-\end{framed}
 
 \end{document}

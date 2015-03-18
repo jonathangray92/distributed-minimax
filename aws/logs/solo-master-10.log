@@ -1,0 +1,14 @@
+2015/03/16 03:23:28 DoWork called
+2015/03/16 03:23:28 expanding rootState for 1 slaves
+2015/03/16 03:23:28 created 7 jobs from root state
+2015/03/16 03:23:28 distributing 7 jobs to 1 slaves
+2015/03/16 03:23:38 slave connected with 7 past results
+2015/03/16 03:23:38 AddResult {X:1928440315904 Y:173979729920 IsXMove:true}
+2015/03/16 03:23:38 AddResult {X:1928440315904 Y:208339468288 IsXMove:true}
+2015/03/16 03:23:38 AddResult {X:1928440315904 Y:140693733376 IsXMove:true}
+2015/03/16 03:23:38 AddResult {X:1928440315904 Y:139636768768 IsXMove:true}
+2015/03/16 03:23:38 AddResult {X:1928440315904 Y:139620253696 IsXMove:true}
+2015/03/16 03:23:38 AddResult {X:1928440315904 Y:148209926144 IsXMove:true}
+2015/03/16 03:23:38 AddResult {X:1928440315904 Y:2338643247104 IsXMove:true}
+2015/03/16 03:23:38 all results submitted; 3085300 states analyzed by all slaves
+2015/03/16 03:23:38 returning bestMove to user
