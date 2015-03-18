@@ -329,13 +329,29 @@ Included here is the raw log output from the user process (Figure~\ref{fig:duo-u
 
 \begin{figure}[h]
 \lstinputlisting[firstline=2,lastline=11]{../aws/logs/duo-master-3.log}
-\caption{The first 10 lines of raw output of the master process with a 2-node slave cluster. The complete log is too long to list here.}
+\caption{The first 10 lines of raw output of the master process with a 2-slave cluster. The complete log is too long to list here.}
 \label{fig:duo-master-3}
 \end{figure}
 
-We can verify that this is a 2-slave cluster in line 8 of Figure~\ref{fig:duo-master-3}. We can further verify that the analsyis completed without error and that the result of the analysis (at the bottom of Figure~\ref{fig:duo-user-3} was an optimal move\footnote{The rules of Connect-4 are not included in this document, but are widely available. In this case, the recommended move is optimal because any other move would lead to an immediate win by X playing in the same spot.}.
+We can verify that this is a 2-slave cluster in line 8 of Figure~\ref{fig:duo-master-3}. We can further verify that the analsyis completed without error and that the result of the analysis (at the bottom of Figure~\ref{fig:duo-user-3} was an optimal move\footnote{The rules of Connect-4 are not included in this document, but are widely available. In this case, the recommended move is optimal because any other move would lead to an immediate win by X playing in the same spot.}. Since the analysis completed successfully and without error for a cluster of 2 slaves, this test is considered to have passed.
 
 \subsubsection{\textbf{Test:} Ten-Node Cluster}
+
+\paragraph{Test description:} Analyze a Connect-4 game state using a cluster of 10 slaves
+
+\paragraph{Pass Criteria:} The analysis completes without error, and the result of the analysis is an optimal move.
+
+\paragraph{Test Result:} PASS
+
+A cluster of 10 slaves was used to analyze the same Connect-4 state, and the same (optimal) result was returned. Relevant lines of the master process's log output are shown in Figure~\ref{fig:master-3}.
+
+\begin{figure}[h]
+\lstinputlisting[firstline=1,lastline=4]{../aws/logs/master-3.log}
+\caption{An excerpt of the raw output of the master process with a 10-slave cluster. The complete log is too long to list here.}
+\label{fig:master-3}
+\end{figure}
+
+It can be seen in this log output that 10 slaves are used. Since the analysis completed successfully and without error using a cluster of 10 slaves, this test is considered to have passed.
 
 \subsection{\textbf{Requirement:} \emph{allow the user to set a time limit on the computation}}
 
