@@ -80,6 +80,15 @@ Jonathan focused on the master-slave communication protocol, job pool creation a
 
 In addition, he performed the 2-slave and 10-slave speed testing using Amazon AWS virtual machines, familiarizing himself to a new industry-standard tool.
 
+\subsection{Steven's Individual Contributions}
+
+For the project, I was responsible for implementing the initial version of the minimax algorithm, as well as implementing game logic and game state serialization for tic-tac-toe and checkers. I was also responsible for validating the correctness of the minimax algorithm and testing the compatibility of the final implementation with Windows 8.1.
+
+The minimax algorithm is defined in terms of a set of operations that can be implemented on any value representing a state in a game. These operations tell the implementation of the algorithm whose move it is, what the heuristic value of the current game state is, what moves are possible from this state, and how to serialize the state for transmission over the network. This implementation has been validated by running it using the tic-tac-toe game logic and generating a table of optimal moves (Appendix E). Over 10\% of this table has been manually verified for correctness in holding with the relevant validation test, and no errors were found.
+
+This implementation of the algorithm was then used to build the slave tasks and forms an integral part of their functioning, along with the code Jonathan wrote to optimize the execution of the code.
+
+
 %
 % Table of Contents
 %
