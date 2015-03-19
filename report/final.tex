@@ -60,6 +60,14 @@ John \textsc{Taglione}\\
 %
 \section{Executive Summary}
 
+This document outlines the design for and results of developing a software framework which allows the user to distribute the evaluation of a zero-sum sequential game using the minimax algorithm over an arbitrary number of computers. Minimax is an optimal algorithm developed in the late 1940s which plays a game by searching for the best possible move under the assumption that the opponent plays perfectly. Developing this framework will enable users to speed up the evaluation of minimaxable problems by leveraging existing capacity on general-purpose commodity computer systems.
+
+The resulting framework allows a user to deploy a game-specific web service which computes the best move to make from a game position supplied by a client of the service. Clients of a web service created using the framework are also able to supply a time limit for the evaluation of the problem, which forces the service to provide a best guess if it is unable to fully evaluate the problem in the allotted time.
+
+The design uses a master/slave architecture to distribute the web service over a cluster of computers. The master node in the cluster receives requests from the client, breaks the requested minimax computation into a set of jobs which can be executed in parallel, and allocates those jobs to slave nodes in the cluster. Once the slaves have completed their jobs, the master consolidates the results in order to determine what the best move is and returns it to the client.
+
+At the time of writing of this document, the framework has been fully implemented and tested. The framework has been verified to meet all functional requirements and constraints, including correctly implementing the minimax algorithm, being able to distribute the computation over two to ten computers, being able to be limited by a user-supplied time limit, and running on all target operating systems. Additionally, the key objective that a cluster of computers using the framework should be able evaluate more game states in the same amount of time as a single computer was met. A second objective, that the framework should optimally use processors of different speeds was not incorporated into the design, and therefore has not been met. Because the project has met all requirements and constraints, as well as the first objective, we consider the project to be a success. Future work on this project would be directed toward redesigning the job allocation module in order to meet the second objective.
+
 %
 % Group Highlights and Individual Contributions
 %
@@ -309,6 +317,16 @@ This section introduces a test for each requirement, constraint, and objective i
 % Tests: Functional Requirements
 
 \subsection{\textbf{Requirement:} \emph{shall correctly implement the minimax algorithm}}\label{sec:req-correctness}
+
+\subsubsection{\textbf{Test:} Manually Validate Tic-Tac-Toe}
+
+\paragraph{Test description:} Generate a table of optimal moves for each possible starting tac-tac-toe position using the minimax implementation. Manually verify that the generated moves are optimal.
+
+\paragraph{Pass criteria:} Each validated entry in the table is correct. At least 10\% of the table must be validated.
+
+\paragraph{Test result:} PASS
+
+Tic-tac-toe has 628 possible start positions (i.e. positions where neither player has won nor have all the squares been filled). Moves for well over 63 (10\%) of these were manually validated. A table of validated moves is included in Appendix E.
 
 \subsection{\textbf{Requirement:} \emph{allow for distribution over a number of nodes between 2 and 10}}
 
