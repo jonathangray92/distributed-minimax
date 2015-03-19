@@ -102,7 +102,11 @@ This implementation of the algorithm was then used to build the slave tasks and 
 %
 % Background and Motivation
 %
-\section{Background and Motivation}
+\section{Introduction}
+
+This document outlines the design, implementation, and testing of a software framework for distributing the evalutation of the minimax algorithm across a cluster of computers. The motivation and goal of the design is introduced first, followed by a set of requirements and objectives that the project should fulfill, and a description of the final design at both a system- and module-level. A set of tests was designed and executed for each requirement and objective, and the results of these tests are presented and discussed. Lastly, this document provides an overview of the conclusions drawn from this project, and suggestions for future work.
+
+\subsection{Background and Motivation}
 Some of the earliest software written for programmable computers sought to enable them to play abstract strategy games such as chess and checkers [1]. In the late 1940s, artificial intelligence pioneers like Claude Shannon, John von Neumann, and Alan Turing independently developed game-playing algorithms that relied on the concept of “minimaxing”, an optimal algorithm for game-playing which searches for the most advantageous move assuming the opponent plays perfectly [2].
 
 The Minimax algorithm's analysis of a game state (e.g. the particular configuration of chess pieces mid-game) relies on analysis of all possible games that could be played out from this position. For games too complex for this complete analysis (chess, for example, is estimated to have more possible games than there are atoms in the universe[3]), the game is analyzed to a limited depth, and a heuristic is used to estimate which player is winning at a given state. If more game states are analyzed, the heuristic evaluation will be based on more information, and the resulting analysis is more likely to be accurate.
@@ -116,7 +120,7 @@ The primary motivation for this project was the group members’ interest in gam
 %
 % Project Goal
 %
-\section{Project Goal}
+\subsection{Project Goal}
 
 The goal of this project was to create a software framework with which a user can distribute the evaluation of a user-defined perfect-information zero-sum sequential game using the minimax algorithm over an arbitrary number of computers.
 
