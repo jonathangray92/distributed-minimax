@@ -3,8 +3,10 @@
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{multicol}
+\usepackage{float}
 \usepackage{listings}
 \usepackage{framed}
+\usepackage{pdfpages}
 \usepackage[bottom]{footmisc}
 \usepackage[parfill]{parskip}
 
@@ -490,25 +492,57 @@ A second objective was included Section~\ref{sec:objectives} addressing users wh
 
 [3] Steinerberger, S. (2014). On the number of positions in chess without promotion. International Journal of Game Theory.
 
-[4] Google (2008). Protocol Buffers - Google's data interchange format.\\ \tt{https://github.com/google/protobuf}
+[4] Google (2008). Protocol Buffers - Google's data interchange format.\\ \texttt{https://github.com/google/protobuf }
 
-[5] Chess Programming Wiki (2015). Iterative Deepening.\\ \tt{https://chessprogramming.wikispaces.com/Iterative+Deepening}
+[5] Chess Programming Wiki (2015). Iterative Deepening.\\ \texttt{https://chessprogramming.wikispaces.com/Iterative+Deepening}
 
-[6] Amazon (2015). Amazon Linux AMI.\\ \tt{http://aws.amazon.com/amazon-linux-ami/}
-
+[6] Amazon (2015). Amazon Linux AMI.\\ \texttt{http://aws.amazon.com/amazon-linux-ami/}
 
 
 %
-%
+% Appendix A: Gantt Chart History
 %
 \pagebreak
 \section{Appendix A: Gantt Chart History}
 
+This appendix includes the Gantt charts from the Project Proposal, the Test Document, and the Progress Report, as well as an updated Gantt chart which includes the work completed up to the day this report was submitted.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{img/gantt-proposal}
+\caption{The initial Gantt chart, as presented in the Project Proposal.}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{img/gantt-test}
+\caption{The Gantt chart from the Test Document}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{img/gantt-progress}
+\caption{The Gantt chart from the Progress Report}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{img/gantt-final}
+\caption{The final Gantt chart, representative of work done to this day.}
+\end{center}
+\end{figure}
+
 %
-%
+% Appendix B: Original Validation and Acceptance Tests
 %
 \pagebreak
-\section{Appendix B: Original Validation and Acceptance Tests}
+\includepdf[scale=0.8,pages={-},pagecommand=\section{Appendix B: Original Validation and Acceptance Tests}]{img/original-tests-1.pdf}
+\includepdf[scale=0.8,pages={-}]{img/original-tests-2.pdf}
+\includepdf[scale=0.8,pages={-}]{img/original-tests-3.pdf}
+
 
 %
 % Appendix C: Code Samples
