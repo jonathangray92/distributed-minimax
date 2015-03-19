@@ -107,7 +107,7 @@ The design shall:
 \item allow the user to set a time limit (at least 1 second) on the computation, and enforce this time limit within 0.5 seconds.
 \end{enumerate}
 
-\subsection{Constraints}
+\subsection{Constraints}\label{sec:constraints}
 
 The resulting software must be executable on all of:
 \begin{enumerate}
@@ -305,7 +305,7 @@ This section introduces a test for each requirement, constraint, and objective i
 
 % Tests: Functional Requirements
 
-\subsection{\textbf{Requirement:} \emph{shall correctly implement the minimax algorithm}}
+\subsection{\textbf{Requirement:} \emph{shall correctly implement the minimax algorithm}}\label{sec:req-correctness}
 
 \subsection{\textbf{Requirement:} \emph{allow for distribution over a number of nodes between 2 and 10}}
 
@@ -424,9 +424,11 @@ Figure~\ref{fig:linux} in Appendix D is a screenshot of a master, a user, and a 
 
 % Tests: Objectives
 
-\subsection{\textbf{Objective:} \emph{evaluate more game states than the non-distributed implementation}}
+\subsection{\textbf{Objective:} \emph{evaluate more game states than the non-distributed implementation}}\label{sec:obj-number-analyzed}
 
 % Test
+\subsubsection{\textbf{Test:} Distributed vs. Non-Distributed}\label{sec:number-analyzed}
+
 \paragraph{Test description:} Analyze the same Connect-4 state using (1) a cluster of 10 slaves, and (2) a single computer. Ensure that the single computer is given the same processing time as the cluster took for communication, coordination, and processing combined. Measure the number of game states analyzed during the computations.
 
 \paragraph{Pass Criteria:} The cluster of 10 slaves analyzes more game states than the single computer.
@@ -457,12 +459,24 @@ Note that for both time limits, the cluster of 10 slaves analyzed more states th
 The work required for this test to pass was not completed, and the test was abandoned and assumed to fail. In particular, as mentioned in the "Final Design" paragraph of Section~\ref{sec:job-allocation}, the master's job allocation algorithm is only a simple round-robin assignment, agnostic to the processing capabilities of the different slaves. Given more time, this is a potential area for improvement of this project.
 
 %
-%
+% Conclusions
 %
 \section{Summary and Conclusions}
 
+The overarching purpose of this project was to provide a method to speed up the Minimax algorithm by making use of all available computing power. A user with many computers at his disposal should easily be able to coordinate them to work together on the Minimax problem, and provide better results than he would otherwise achieve with only a single computer.
+
+The first functional requirement presented in Section~\ref{sec:requirements} ensures that the Minimax algorithm is implemented correctly, without which any improvements to execution speed would be worthless. This requirement was met, as demonstrated in Section~\ref{sec:req-correctness}.
+
+The second requirement ensures that the number of computers is variable, i.e. that the system can will work successfully with different cluster sizes\footnote{Though the original project proposal required that the system work with up to 50 computers, this was reduced to 10 to make testing cheaper and easier. This change is not evidence that the system would \emph{not} work with 50 computers (in fact, due to the encouraging results seen in Section~\ref{sec:number-analyzed}, we predict that the system would work quite well with clusters of this size, and would like to test this prediction in the future).}. This requirement was also met by demonstrating that the same evaluation worked with a cluster of 2 slaves and a cluster of 10 slaves.
+
+The third requirement ensures that the user can vary the amount of time available to do work. The framework produced for this project is written in a general, extensible way that would easily allow developers to run the Minimax algorithm on a wide variety of game-theoretic scenarios. Considering the range of possible applications, this requirement was added to ensure that the resulting framework is not overly restrictive in its scope. For similar reasons, the sole constraint in Section~\ref{sec:constraints} (that the software should be executable on a range of operating systems) was added as well. Both requirements were met.
+
+However, as stated at the beginning of this section, the utility of this project is tied to its ability to provide \emph{better} results on a cluster of computers than it could otherwise achieve. If the overhead of network communication and coordination inherent in a distributed system makes cluster perform worse than a single computer, then this project -- while meeting requirements -- is not useful. This primary objective is laid out in Section~\ref{sec:objectives} and tested in Section~\ref{sec:number-analyzed}. The results, summarized in Figure~\ref{fig:number-analyzed} in that section, demonstrate that this objetive was met -- for two different time limits, the cluster of 10 slaves analyzed significantly more game states than a single computer running the Minimax algorithm.
+
+Since the requirements and constraints were met, and this primary "usability" objective was achieved, we consider this project a success. 
+
 %
-%
+% References
 %
 \pagebreak
 \section{References}
