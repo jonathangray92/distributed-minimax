@@ -80,9 +80,11 @@ John \textsc{Taglione}\\
 \section{Background and Motivation}
 Some of the earliest software written for programmable computers sought to enable them to play abstract strategy games such as chess and checkers [1]. In the late 1940s, artificial intelligence pioneers like Claude Shannon, John von Neumann, and Alan Turing independently developed game-playing algorithms that relied on the concept of “minimaxing”, an optimal algorithm for game-playing which searches for the most advantageous move assuming the opponent plays perfectly [2].
 
-Parallelization of general-purpose computation on a graphics processing unit (GPU) has been popular for the last 15 years, but GPU frameworks and hardware remain complicated and expensive compared to central processing unit (CPU) cluster technology [3]. Recently, researchers have developed algorithms to parallelize the minimax algorithm on GPUs and on CPU clusters [4][5]. Given the availability and low cost of commodity server hardware and cloud computing platforms, and the relative ease with which commodity-grade processors can be replaced or added to a cluster, CPU clusters are often preferable to GPUs in achieving scalable parallelization of general-purpose computing [6]. For these reasons, we have focused on CPU clusters for this project.
+The Minimax algorithm's analysis of a game state (e.g. the particular configuration of chess pieces mid-game) relies on analysis of all possible games that could be played out from this position. For games too complex for this complete analysis (chess, for example, is estimated to have more possible games than there are atoms in the universe[3]), the game is analyzed to a limited depth, and a heuristic is used to estimate which player is winning at a given state. If more game states are analyzed, the heuristic evaluation will be based on more information, and the resulting analysis is more likely to be accurate.
 
-This project aimed to produce a software framework for distributing the execution of the minimax algorithm over an arbitrarily-sized cluster of computers. The framework allows an end-user to describe the game tree and provide heuristics for evaluating the state of a game that has not yet terminated, while abstracting away the mechanics of the distributed nature of the computation. It also provides a simple interface to add, remove, and replace computers participating in the minimax search. 
+The purpose of this project is to build software that facilitates the coordination of multiple computers to work together to run the Minimax algorithm, in order to analyze more game states per unit time than would otherwise be possible with just a single computer.
+
+Specifically, this project aims to produce a software framework for distributing the execution of the minimax algorithm over an arbitrarily-sized cluster of computers. The framework allows an end-user to describe the game tree and provide heuristics for evaluating the state of a game that has not yet terminated, while abstracting away the mechanics of the distributed nature of the computation. It also provides a simple interface to add, remove, and replace computers participating in the minimax evaluation. 
 
 The primary motivation for this project was the group members’ interest in game artificial intelligence and distributed systems.
 
@@ -103,8 +105,8 @@ The goal of this project was to create a software framework with which a user ca
 The design shall:
 \begin{enumerate}
 \item correctly implement the minimax algorithm for user-defined perfect-information zero-sum sequential games
-\item allow for distributing evaluation over a number of nodes between 2 and 10\footnote{TODO}; and
-\item allow the user to set a time limit (at least 1 second) on the computation, and enforce this time limit within 0.5 seconds.
+\item allow for distributing evaluation over a number of nodes between 2 and 10
+\item allow the user to set a time limit (at least 1 second) on the computation, and enforce this time limit within 0.5 seconds
 \end{enumerate}
 
 \subsection{Constraints}\label{sec:constraints}
@@ -176,7 +178,7 @@ This module represents network interaction between the \emph{user} and the \emph
 The user makes a request to the master with a serialized game state and a maximum time allowed. The Master node is expected to confer with the slaves and respond within the time limit with its suggestion for a move to be played.
 
 \paragraph{Final Design:\\}
-The open-source \emph{Protobuf}\footnote{TODO} library was used to describe the message formats and generate RPC code. For an exact specification of the RPC, see Section~\ref{sec:protobuf-sample} in Appendix C.
+The open-source \emph{Protobuf} library[4] was used to describe the message formats and generate RPC code. For an exact specification of the RPC, see Section~\ref{sec:protobuf-sample} in Appendix C.
 
 % Job Pool Creation
 \subsubsection{Job Pool Creation}
@@ -247,8 +249,7 @@ The master delivers to each slave a set of jobs to be performed and a maximum ti
 This module deals primarily with serialization and communication with the master node, while the \emph{Slave Work} module below deals primarily with performing analysis.
 
 \paragraph{Final Design:\\}
-The open-source \emph{Protobuf}\footnote{TODO} library was used to describe the message formats and generate RPC code. For an exact specification of the RPC, see Section~\ref{sec:protobuf-sample} in Appendix C.
-
+The open-source \emph{Protobuf} library[4] was used to describe the message formats and generate RPC code. For an exact specification of the RPC, see Section~\ref{sec:protobuf-sample} in Appendix C.
 
 
 % Slave Work
@@ -271,7 +272,7 @@ This module is a component of the \emph{slaves}.
 This module performs executes the jobs that were allocated by the master. This involves running the Minimax algorithm on subsets of the game tree. The results of the jobs are returned to the \emph{Master-Slave} RPC module to be returned to the master.
 
 \paragraph{Final Design:\\}
-This module receives a set of game states to analyze and a time limit, and produces a heuristic evaluation of each game state. For each game state, concurrently, it will run an iterative-deepening Minimax algorithm\footnote{The Minimax algorithm is run first with a cut-off depth of 1, then 2, then 3, etc. until time runs out.}, analyzing to increasing depths until time runs out. When the time limit has elapsed, the results of the last complete iteration for each game state are returned.
+This module receives a set of game states to analyze and a time limit, and produces a heuristic evaluation of each game state. For each game state, concurrently, it will run an iterative-deepening Minimax[5] algorithm\footnote{The Minimax algorithm is run first with a cut-off depth of 1, then 2, then 3, etc. until time runs out.}, analyzing to increasing depths until time runs out. When the time limit has elapsed, the results of the last complete iteration for each game state are returned.
 
 
 % Result Consolidation
@@ -419,7 +420,7 @@ Figure~\ref{fig:osx} in Appendix D is a screenshot of a master, a user, and two 
 
 \paragraph{Test Result:} PASS
 
-Figure~\ref{fig:linux} in Appendix D is a screenshot of a master, a user, and a slave process running successfully on an Amazon Linux AMI using kernel version 3.14.
+Figure~\ref{fig:linux} in Appendix D is a screenshot of a master, a user, and a slave process running successfully on an Amazon Linux AMI[6] using kernel version 3.14.
 
 
 % Tests: Objectives
@@ -483,7 +484,19 @@ A second objective was included Section~\ref{sec:objectives} addressing users wh
 \pagebreak
 \section{References}
 
-https://chessprogramming.wikispaces.com/Iterative+Deepening
+[1] Russell, S., Norvig, P. \& Davis, E. (2010). Artificial intelligence: a modern approach. Upper Saddle River, NJ: Prentice Hall. (p. 122)
+
+[2] Russell, S., Norvig, P. \& Davis, E. (2010). Artificial intelligence: a modern approach. Upper Saddle River, NJ: Prentice Hall. (p. 142)
+
+[3] Steinerberger, S. (2014). On the number of positions in chess without promotion. International Journal of Game Theory.
+
+[4] Google (2008). Protocol Buffers - Google's data interchange format.\\ \tt{https://github.com/google/protobuf}
+
+[5] Chess Programming Wiki (2015). Iterative Deepening.\\ \tt{https://chessprogramming.wikispaces.com/Iterative+Deepening}
+
+[6] Amazon (2015). Amazon Linux AMI.\\ \tt{http://aws.amazon.com/amazon-linux-ami/}
+
+
 
 %
 %
