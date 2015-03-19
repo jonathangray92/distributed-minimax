@@ -113,7 +113,7 @@ The resulting software must be executable on all of:
 \begin{enumerate}
 \item Mac OS 10.9 or above
 \item Windows 8.1 or above
-\item Ubuntu 14.04 or above
+\item Linux 3.14 or above
 \end{enumerate}
 
 \subsection{Objectives}\label{sec:objectives}
@@ -307,8 +307,6 @@ This section introduces a test for each requirement, constraint, and objective i
 
 \subsection{\textbf{Requirement:} \emph{shall correctly implement the minimax algorithm}}
 
-TODO
-
 \subsection{\textbf{Requirement:} \emph{allow for distribution over a number of nodes between 2 and 10}}
 
 % Test
@@ -388,9 +386,41 @@ Figure~\ref{fig:user-10} shows the output of the user process when this test was
 
 % Tests: Constraints
 
-\subsection{\textbf{Constraint:} \emph{must be executable on Mac OS 10.9, Windows 8.1, and Ubuntu 14.04}}
+\subsection{\textbf{Constraint:} \emph{must be executable on Mac OS 10.9, Windows 8.1, and Linux 3.14}}
 
-TODO
+% Test
+\subsubsection{\textbf{Test:} Windows 8.1}
+
+\paragraph{Test Description:} Analyze a game state with all master and slave processes running on Windows 8.1.
+
+\paragraph{Pass Criteria:} The analysis completes without error.
+
+\paragraph{Test Result:} PASS
+
+Figure~\ref{fig:win8} in Appendix D is a screenshot of a master, a user, and two slave processes running successfully in a Windows 8.1 environment.
+
+% Test
+\subsubsection{\textbf{Test:} Mac OS 10.9}
+
+\paragraph{Test Description:} Analyze a game state with all master and slave processes running on Mac OS 9.
+
+\paragraph{Pass Criteria:} The analysis completes without error.
+
+\paragraph{Test Result:} PASS
+
+Figure~\ref{fig:osx} in Appendix D is a screenshot of a master, a user, and two slave processes running successfully in a Mac OS 10.9 environment.
+
+% Test
+\subsubsection{\textbf{Test:} Linux 3.14}
+
+\paragraph{Test Description:} Analyze a game state with all master and slave processes running on Linux 3.14.
+
+\paragraph{Pass Criteria:} The analysis completes without error.
+
+\paragraph{Test Result:} PASS
+
+Figure~\ref{fig:linux} in Appendix D is a screenshot of a master, a user, and a slave process running successfully on an Amazon Linux AMI using kernel version 3.14.
+
 
 % Tests: Objectives
 
@@ -489,5 +519,37 @@ service SlaveService {
     rpc GetWork(GetWorkRequest) returns (GetWorkResponse);
 }
 \end{lstlisting}
+
+%
+% Appendix D: Screenshots
+%
+\pagebreak
+\section{Appendix D: Screenshots}
+
+This appendix includes screenshots taken during testing to serve as proof of work.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{img/win8}
+\caption{A screenshot taken in a Windows 8.1 environment showing one master, one user, and two slave processes running successfully. Note that the colours have been modified to save ink if this document is printed.}
+\label{fig:win8}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{img/osx}
+\caption{A screenshot taken in an OS 10.9 environment showing one master, one user, and two slave processes running successfully. Note that the colours have been modified to save ink if this document is printed.}
+\label{fig:osx}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{img/linux}
+\caption{A screenshot taken in an Amazon Linux AMI environment showing one master, one user, and one slave process running successfully. Note that the Linux kernel version is printed in the bottom-right, and is 3.14.}
+\label{fig:linux}
+\end{center}
+\end{figure}
 
 \end{document}
