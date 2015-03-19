@@ -202,7 +202,7 @@ A \emph{job} in the final design is a game state that is a descendent\footnote{T
 
 
 % Job Allocation
-\subsubsection{Job Allocation}
+\subsubsection{Job Allocation}\label{sec:job-allocation}
 
 \paragraph{Module Inputs:}
 \begin{itemize}
@@ -426,6 +426,7 @@ Figure~\ref{fig:linux} in Appendix D is a screenshot of a master, a user, and a 
 
 \subsection{\textbf{Objective:} \emph{evaluate more game states than the non-distributed implementation}}
 
+% Test
 \paragraph{Test description:} Analyze the same Connect-4 state using (1) a cluster of 10 slaves, and (2) a single computer. Ensure that the single computer is given the same processing time as the cluster took for communication, coordination, and processing combined. Measure the number of game states analyzed during the computations.
 
 \paragraph{Pass Criteria:} The cluster of 10 slaves analyzes more game states than the single computer.
@@ -444,8 +445,16 @@ The number of states analyzed was measured for four analyses: with 10 slaves, gi
 
 Note that for both time limits, the cluster of 10 slaves analyzed more states than the single computer. For this reason, this test is considered to have passed, and the objective met. 
 
-
 \subsection{\textbf{Objective:} \emph{should maximize throughput on different combinations of fast and slow processors}}
+
+% Test
+\subsubsection{\textbf{Test:} Analyze different combinations of fast and slow CPUs}
+
+\paragraph{Test Description:} See Section 3.6 of Appendix B for a description of the originally-proposed test.
+
+\paragraph{Test Result:} FAIL
+
+The work required for this test to pass was not completed, and the test was abandoned and assumed to fail. In particular, as mentioned in the "Final Design" paragraph of Section~\ref{sec:job-allocation}, the master's job allocation algorithm is only a simple round-robin assignment, agnostic to the processing capabilities of the different slaves. Given more time, this is a potential area for improvement of this project.
 
 %
 %
