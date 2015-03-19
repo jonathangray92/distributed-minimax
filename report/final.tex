@@ -58,7 +58,7 @@ John \textsc{Taglione}\\
 %
 % Executive Summary
 %
-\section{Executive Summary}
+\section{Executive Summary\\\large{(Author: Steven Blenkinsop)}}
 
 This document outlines the design for and results of developing a software framework which allows the user to distribute the evaluation of a zero-sum sequential game using the minimax algorithm over an arbitrary number of computers. Minimax is an optimal algorithm developed in the late 1940s which plays a game by searching for the best possible move under the assumption that the opponent plays perfectly. Developing this framework will enable users to speed up the evaluation of minimaxable problems by leveraging existing capacity on general-purpose commodity computer systems.
 
@@ -75,6 +75,15 @@ At the time of writing of this document, the framework has been fully implemente
 \section{Group Highlights and Individual Contributions}
 
 %
+% Acknowledgements
+%
+\pagebreak
+\section{Acknowledgements\\\large{(Author: Steven Blenkinsop)}}
+
+Our team would like to acknowledge the help of several people who contributed to the success of our project. First, we would like to thank our supervisor, Professor Jorg Liebeherr, for helping guide the project through its course and giving us the encouragement to make it happen. We'd also like to thank our administrator, Mr. John Taglione, for his invaluable feedback and guidance, and for giving us insight into how our experience with this project relates to real world engineering projects. Finally, we'd like to thank the Engineering Communication Program for all they've done to give us the opportunity to get the most out of this experience.
+
+
+%
 % Table of Contents
 %
 \pagebreak
@@ -87,7 +96,7 @@ At the time of writing of this document, the framework has been fully implemente
 %
 % Background and Motivation
 %
-\section{Background and Motivation}
+\section{Background and Motivation\\\large{(Author: Jonathan Gray)}}
 Some of the earliest software written for programmable computers sought to enable them to play abstract strategy games such as chess and checkers [1]. In the late 1940s, artificial intelligence pioneers like Claude Shannon, John von Neumann, and Alan Turing independently developed game-playing algorithms that relied on the concept of “minimaxing”, an optimal algorithm for game-playing which searches for the most advantageous move assuming the opponent plays perfectly [2].
 
 The Minimax algorithm's analysis of a game state (e.g. the particular configuration of chess pieces mid-game) relies on analysis of all possible games that could be played out from this position. For games too complex for this complete analysis (chess, for example, is estimated to have more possible games than there are atoms in the universe[3]), the game is analyzed to a limited depth, and a heuristic is used to estimate which player is winning at a given state. If more game states are analyzed, the heuristic evaluation will be based on more information, and the resulting analysis is more likely to be accurate.
@@ -101,14 +110,14 @@ The primary motivation for this project was the group members’ interest in gam
 %
 % Project Goal
 %
-\section{Project Goal}
+\section{Project Goal\\\large{(Author: Jonathan Gray)}}
 
 The goal of this project was to create a software framework with which a user can distribute the evaluation of a user-defined perfect-information zero-sum sequential game using the minimax algorithm over an arbitrary number of computers.
 
 %
 % Project Requirements
 %
-\section{Project Requirements}\label{sec:requirements}
+\section{Project Requirements\\\large{(Author: Jonathan Gray)}}\label{sec:requirements}
 
 \subsection{Functional Requirements}
 
@@ -137,7 +146,7 @@ The resulting software should:
 \end{enumerate}
 
 
-\section{Final Design}
+\section{Final Design\\\large{(Author: Jonathan Gray)}}
 
 Section~\ref{sec:system} provides an overview of the final design and the interactions between the various modules.
 
@@ -146,7 +155,7 @@ Following that, Section~\ref{sec:modules} provides a more detailed description a
 %
 % System-Level Overview
 %
-\subsection{System-Level Overview}\label{sec:system}
+\subsection{System-Level Overview\\\normalsize{(Author: Steven Blenkinsop)}}\label{sec:system}
 
 \begin{figure}[h]
 \begin{center}
@@ -164,7 +173,7 @@ On receiving a request from the \emph{user} over the \emph{User-Master RPC}, the
 %
 % Module-Level Descriptions
 %
-\subsection{Module-Level Descriptions}\label{sec:modules}
+\subsection{Module-Level Descriptions\\\normalsize{(Author: Jonathan Gray)}}\label{sec:modules}
 
 This section gives a formal description of the major modules referenced in the previous section. Each module's inputs and outputs are listed along with a brief description of the module's purpose. The final design of each module is also described, and areas for potential improvement are noted in some cases.
 
@@ -310,13 +319,13 @@ Given a set of game states that are descendents of the "parent" game state for w
 %
 % Testing and Verification
 %
-\section{Testing and Verification}
+\section{Testing and Verification\\\large{(Author: Jonathan Gray)}}
 
 This section introduces a test for each requirement, constraint, and objective introduced in Section~\ref{sec:requirements}. The results of each test are included along with a short discussion concluding whether or not each requirement was met.
 
 % Tests: Functional Requirements
 
-\subsection{\textbf{Requirement:} \emph{shall correctly implement the minimax algorithm}}\label{sec:req-correctness}
+\subsection{\textbf{Requirement:} \emph{shall correctly implement the minimax algorithm}\\\small{(Author: Steven Blenkinsop)}}\label{sec:req-correctness}
 
 \subsubsection{\textbf{Test:} Manually Validate Tic-Tac-Toe}
 
@@ -482,7 +491,7 @@ The work required for this test to pass was not completed, and the test was aban
 %
 % Conclusions
 %
-\section{Summary and Conclusions}
+\section{Summary and Conclusions\\\large{(Author: Jonathan Gray)}}
 
 The overarching purpose of this project was to provide a method to speed up the Minimax algorithm by making use of all available computing power. A user with many computers at his disposal should easily be able to coordinate them to work together on the Minimax problem, and provide better results than he would otherwise achieve with only a single computer.
 
@@ -521,7 +530,7 @@ A second objective was included Section~\ref{sec:objectives} addressing users wh
 % Appendix A: Gantt Chart History
 %
 \pagebreak
-\section{Appendix A: Gantt Chart History}
+\section{Appendix A: Gantt Chart History\\\large{(Author: Jonathan Gray)}}
 
 This appendix includes the Gantt charts from the Project Proposal, the Test Document, and the Progress Report, as well as an updated Gantt chart which includes the work completed up to the day this report was submitted.
 
@@ -558,15 +567,15 @@ This appendix includes the Gantt charts from the Project Proposal, the Test Docu
 %
 \pagebreak
 \includepdf[scale=0.8,pages={-},pagecommand=\section{Appendix B: Original Validation and Acceptance Tests}]{img/original-tests-1.pdf}
-\includepdf[scale=0.8,pages={-}]{img/original-tests-2.pdf}
-\includepdf[scale=0.8,pages={-}]{img/original-tests-3.pdf}
+\includepdf[scale=0.8,pages={-},pagecommand=]{img/original-tests-2.pdf}
+\includepdf[scale=0.8,pages={-},pagecommand=]{img/original-tests-3.pdf}
 
 
 %
 % Appendix C: Code Samples
 %
 \pagebreak
-\section{Appendix C: Code Samples}
+\section{Appendix C: Code Samples\\\large{(Author: Jonathan Gray)}}
 
 This appendix includes raw samples of code from the project to serve as further information for interested developers, and as proof of work for ECE496 administrators.
 
@@ -614,7 +623,7 @@ service SlaveService {
 % Appendix D: Screenshots
 %
 \pagebreak
-\section{Appendix D: Screenshots}
+\section{Appendix D: Screenshots\\\large{(Author: Jonathan Gray)}}
 
 This appendix includes screenshots taken during testing to serve as proof of work.
 
@@ -641,5 +650,14 @@ This appendix includes screenshots taken during testing to serve as proof of wor
 \label{fig:linux}
 \end{center}
 \end{figure}
+
+%
+% Appendix E: Validated Tic-Tac-Toe 
+\pagebreak
+\hspace{4cm}
+\pagebreak
+\includepdf[scale=0.8,pages={1},pagecommand=\section{Appendix E: Validated-Tic-Tac-Toe Results}]{img/validated-tic-tac-toe.pdf}
+\includepdf[scale=0.8,pages={2,3,4},pagecommand=]{img/validated-tic-tac-toe.pdf}
+
 
 \end{document}
